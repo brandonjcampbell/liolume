@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LioLume Life Simulator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;touch-action:none}
+  body{background:#030810;color:#c8d8e8;font-family:'JetBrains Mono','Fira Code',monospace;display:flex;flex-direction:column;height:100dvh;-webkit-user-select:none;user-select:none}
+  #header{padding:8px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(100,140,180,0.12);background:rgba(8,16,32,0.9);flex-shrink:0;gap:6px}
+  .logo{font-size:16px;font-weight:700;letter-spacing:2px;color:#5ae;white-space:nowrap}
+  .hdr-left{display:flex;align-items:center;gap:6px;min-width:0}
+  .count{font-size:9px;color:#4a6a8a;white-space:nowrap}
+  .right{display:flex;gap:6px;align-items:center;flex-shrink:0}
+  .btn{padding:8px 12px;border-radius:6px;cursor:pointer;font-size:11px;letter-spacing:.5px;font-family:inherit;transition:all .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;white-space:nowrap}
+  .btn-spawn{background:rgba(80,170,240,0.2);border:1px solid rgba(80,170,240,0.35);color:#6be}
+  .btn-spawn:active{background:rgba(80,170,240,0.4)}
+  .btn-breed{background:rgba(180,80,240,0.2);border:1px solid rgba(180,80,240,0.35);color:#b8e;display:none}
+  .btn-breed:active{background:rgba(180,80,240,0.4)}
+  .btn-breed.show{display:inline-block}
+  .btn-clear{background:rgba(240,80,80,0.12);border:1px solid rgba(240,80,80,0.25);color:#e88}
+  .btn-clear:active{background:rgba(240,80,80,0.3)}
+  .btn-sell{background:rgba(240,180,60,0.15);border:1px solid rgba(240,180,60,0.3);color:#ec6;display:none}
+  .btn-sell:active{background:rgba(240,180,60,0.35)}
+  .btn-sell.show{display:inline-block}
+  #status-bar{display:none;flex-shrink:0;padding:5px 12px;background:rgba(8,16,32,0.85);border-bottom:1px solid rgba(100,140,180,0.1);font-size:9px;color:#5a7a9a;text-align:center;letter-spacing:.5px;gap:8px;justify-content:center;align-items:center}
+  #status-bar.show{display:flex}
+  .status-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px}
+  .status-chip.p1{background:rgba(80,170,240,0.12);color:#6be;border:1px solid rgba(80,170,240,0.25)}
+  .status-chip.p2{background:rgba(240,160,60,0.12);color:#eb8;border:1px solid rgba(240,160,60,0.25)}
+  .dot{width:6px;height:6px;border-radius:50%}.dot.p1{background:#5ae}.dot.p2{background:#ea5}
+  #tank-wrap{flex:1 1 auto;position:relative;overflow:hidden;background:#020810;min-height:0}
+  #tank{position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none}
+  #hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:10px;color:#4a6a8a;letter-spacing:.5px;pointer-events:none;text-align:center;line-height:1.5;background:rgba(4,10,20,0.7);padding:6px 14px;border-radius:8px;border:1px solid rgba(60,90,120,0.15)}
+  #drawer{position:fixed;bottom:0;left:0;right:0;background:rgba(6,12,24,0.97);border-top:1px solid rgba(100,140,180,0.15);border-radius:16px 16px 0 0;transform:translateY(100%);transition:transform .3s ease;max-height:65dvh;overflow:hidden;display:flex;flex-direction:column;z-index:10;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #drawer.open{transform:translateY(0)}
+  #drawer-handle{padding:8px;text-align:center;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+  #drawer-handle .bar{width:36px;height:4px;background:rgba(100,140,180,0.3);border-radius:2px;margin:0 auto 4px}
+  #drawer-handle .label{font-size:8px;color:#5a7a9a;letter-spacing:1.5px}
+  #drawer-content{padding:0 12px 14px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+  .glabel{font-size:8px;color:#4a6a8a;letter-spacing:1.5px;margin-bottom:3px}
+  #genome-bar{display:flex;gap:1px;flex-wrap:wrap;margin-bottom:6px}
+  .bp{width:22px;height:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(20,35,55,0.5);border:1px solid rgba(60,90,120,0.2);border-radius:3px;transition:all .15s ease}
+  .bp .idx{font-size:4px;color:#4a6a8a}.bp .base{font-size:11px;font-weight:700;line-height:1}.bp .comp{font-size:6px;opacity:.4}
+  .bp.dim{opacity:.18}.bp.lit{border-color:var(--bp-color);background:color-mix(in srgb,var(--bp-color) 16%,transparent)}
+  .base-A{color:#4ae88a}.base-T{color:#e84a6a}.base-C{color:#4a8ae8}.base-G{color:#e8c84a}
+  .trait-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 8px}
+  .tcol h4{font-size:7px;letter-spacing:1.5px;margin-bottom:2px}
+  .tcol.lume h4{color:#5ae}.tcol.lio h4{color:#ea5}.tcol.move h4{color:#a6e}
+  .trow{display:flex;justify-content:space-between;gap:3px;padding:1px 3px;border-radius:3px;cursor:default;font-size:8px;-webkit-tap-highlight-color:transparent}
+  .trow.active{background:rgba(80,170,240,0.1)}
+  .tcol.lio .trow.active{background:rgba(240,170,80,0.1)}
+  .tcol.move .trow.active{background:rgba(160,100,230,0.1)}
+  .trow .tn{color:#7a9aba;white-space:nowrap}.tcol.lio .trow .tn{color:#ba9a6a}.tcol.move .trow .tn{color:#9a8aba}
+  .trow .tv{font-weight:600;color:#c8dae8;white-space:nowrap}.tcol.lio .trow .tv{color:#e8dac8}.tcol.move .trow .tv{color:#d8c8e8}
+  #bp-map{font-size:8px;color:#3a5a6a;line-height:1.4;margin-top:4px;grid-column:1/-1}
+  #bp-map .ml{color:#5a7a9a;letter-spacing:1.5px;margin-bottom:2px}
+  .sep{height:1px;background:rgba(100,140,180,0.08);margin:4px 0}
+  .gen-tag{font-size:8px;color:#4a6a8a;margin-bottom:4px}
+  @media(min-width:700px){
+    #drawer{position:static;transform:none!important;transition:none;max-height:none;border-radius:0;border-top:none;border-left:1px solid rgba(100,140,180,0.12);width:310px;flex-shrink:0;display:flex;backdrop-filter:none}
+    #drawer-handle{display:none}
+    #main{display:flex;flex:1 1 auto;min-height:0;overflow:hidden}
+    #tank-wrap{flex:1 1 auto;position:relative;min-width:0}
+    .bp{width:26px;height:32px}.bp .base{font-size:12px}.bp .idx{font-size:5px}
+    .trow{font-size:9px}.trait-grid{gap:8px 12px}
+  }
+  @media(max-width:699px){#main{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;position:relative}}
+</style>
+</head>
+<body>
+<div id="header">
+  <div class="hdr-left"><span class="logo">LIOLUME</span><span class="count" id="cnt">0</span></div>
+  <div class="right">
+    <button class="btn btn-spawn" onclick="spawn()">+ SPAWN</button>
+    <button class="btn btn-breed" id="breed-btn" onclick="breed()">⚭ BREED</button>
+    <button class="btn btn-sell" id="sell-btn" onclick="sell()">✕ SELL</button>
+    <button class="btn btn-clear" onclick="clearAll()">CLEAR</button>
+  </div>
+</div>
+<div id="status-bar"><span id="status-text"></span></div>
+<div id="main">
+  <div id="tank-wrap">
+    <canvas id="tank"></canvas>
+    <div id="hint">Tap to select · Tap another to pair · Hold+drag to move</div>
+  </div>
+  <div id="drawer">
+    <div id="drawer-handle" onclick="toggleDrawer()"><div class="bar"></div><div class="label">GENOME INSPECTOR</div></div>
+    <div id="drawer-content">
+      <div class="gen-tag" id="sel-info"></div>
+      <div class="glabel">GENOME — 40 BASE PAIRS</div>
+      <div id="genome-bar"></div>
+      <div class="sep"></div>
+      <div class="trait-grid" id="traits"></div>
+    </div>
+  </div>
+</div>
+<script>
+const BASES=["A","T","C","G"],COMP={"A":"T","T":"A","C":"G","G":"C"};
+const BVAL={"A":0,"T":1,"C":2,"G":3};
+const BCOL={"A":"#4ae88a","T":"#e84a6a","C":"#4a8ae8","G":"#e8c84a"};
+const canvas=document.getElementById("tank"),ctx=canvas.getContext("2d");
+let W=600,H=600,creatures=[],parent1Id=null,parent2Id=null,viewId=null,particles=[];
+let generation=0,drawerOpen=false,activeTrait=null;
+const BPC=40;
+let dragId=null,dragOff={x:0,y:0},isDragging=false,dragStartTime=0,dragStartX=0,dragStartY=0;
+
+// ── Waveforms ──
+function wSin(t){return Math.sin(t*Math.PI*2)}
+function wTri(t){const v=((t%1)+1)%1;return v<.25?v*4:v<.75?2-v*4:v*4-4}
+function wSaw(t){return 2*(((t%1)+1)%1)-1}
+function wSqr(t){return((t%1)+1)%1<.5?1:-1}
+function wBlend(t,wf){
+  if(wf<.33){const m=wf/.33;return wSin(t)*(1-m)+wTri(t)*m}
+  if(wf<.66){const m=(wf-.33)/.33;return wTri(t)*(1-m)+wSaw(t)*m}
+  return wSaw(t)*(1-(wf-.66)/.34)+wSqr(t)*((wf-.66)/.34);
+}
+function wfN(v){if(v<.17)return"Sine";if(v<.5)return"Sin→Tri";if(v<.56)return"Tri";if(v<.72)return"Tri→Saw";if(v<.78)return"Saw";return"Saw→Sqr"}
+
+const TRAITS={
+  // LUME
+  "Seeds":       {bp:[0,1,2],      cat:"lume", fmt:v=>v},
+  "Hue":         {bp:[3,4,5],      cat:"lume", fmt:v=>v.toFixed(0)+"°"},
+  "Hue 2":       {bp:[2,3],        cat:"lume", fmt:v=>v.toFixed(0)+"°"},
+  "Tone Split":  {bp:[19,20],      cat:"lume", fmt:v=>v.toFixed(2)},
+  "Saturation":  {bp:[4,5,6],      cat:"lume", fmt:v=>v.toFixed(0)+"%"},
+  "Lightness":   {bp:[6,7],        cat:"lume", fmt:v=>v.toFixed(0)+"%"},
+  "Glow":        {bp:[7,8,9],      cat:"lume", fmt:v=>v.toFixed(1)},
+  "Min Reach":   {bp:[9,10],       cat:"lume", fmt:v=>v.toFixed(1)+"px"},
+  "Max Reach":   {bp:[10,11,12],   cat:"lume", fmt:v=>v.toFixed(1)+"px"},
+  "Curve Width": {bp:[11,12,13],   cat:"lume", fmt:v=>v.toFixed(2)},
+  "Membrane":    {bp:[7,12,13],    cat:"lume", fmt:v=>v.toFixed(2)},
+  "Stiffness":   {bp:[5,6,7],      cat:"lume", fmt:v=>v.toFixed(2)},
+  "Scallop Lvl": {bp:[30,31],      cat:"lume", fmt:v=>v},
+  "Scallop Amp": {bp:[31,32],      cat:"lume", fmt:v=>v.toFixed(2)},
+  // MOVE
+  "Pulse Str":   {bp:[14,15,16],   cat:"move", fmt:v=>v.toFixed(2)},
+  "Pulse Rate":  {bp:[15,16,17],   cat:"move", fmt:v=>v.toFixed(2)+"s"},
+  "Pulse Prob":  {bp:[13,17,18],   cat:"move", fmt:v=>(v*100).toFixed(0)+"%"},
+  "Damping":     {bp:[18,19,20],   cat:"move", fmt:v=>v.toFixed(3)},
+  // LIO
+  "Trails":      {bp:[21,22,23],   cat:"lio",  fmt:v=>v},
+  "Trail Nodes": {bp:[23,24,25],   cat:"lio",  fmt:v=>v+"±var"},
+  "Trail Var":   {bp:[25,26],      cat:"lio",  fmt:v=>(v*100).toFixed(0)+"%"},
+  "Seg Length":  {bp:[24,25,26],   cat:"lio",  fmt:v=>v.toFixed(1)+"px"},
+  "Seg Var":     {bp:[26,27],      cat:"lio",  fmt:v=>(v*100).toFixed(0)+"%"},
+  "Stretch":     {bp:[26,27],      cat:"lio",  fmt:v=>(v*100).toFixed(0)+"%"},
+  "Thickness":   {bp:[31,32,33],   cat:"lio",  fmt:v=>v.toFixed(1)+"px"},
+  "Taper":       {bp:[33,34],      cat:"lio",  fmt:v=>v.toFixed(2)},
+  "Lio Gravity": {bp:[28,29,30],   cat:"lio",  fmt:v=>v.toFixed(1)},
+  "Osc Amp":     {bp:[34,35,36],   cat:"lio",  fmt:v=>v.toFixed(1)},
+  "Osc Freq":    {bp:[36,37],      cat:"lio",  fmt:v=>v.toFixed(2)},
+  "Waveform":    {bp:[37,38],      cat:"lio",  fmt:v=>wfN(v)},
+  "Osc Phase":   {bp:[38,39],      cat:"lio",  fmt:v=>v.toFixed(2)+"π"},
+};
+
+function rg(){return Array.from({length:BPC},()=>BASES[Math.floor(Math.random()*4)])}
+function nm(g,...ix){return ix.reduce((s,i)=>s+BVAL[g[i]],0)/(ix.length*3)}
+
+function decode(g){
+  const minR=8+nm(g,9,10)*20;
+  const maxRaw=20+nm(g,10,11,12)*45;
+  const maxR=Math.max(maxRaw,minR+6);
+
+  // Two-tone: hue2 offset from hue by 20-180°
+  const hue1=nm(g,3,4,5)*360;
+  const hueShift=20+nm(g,2,3)*160; // 20..180° offset
+
+  return{
+    seeds:      Math.floor(nm(g,0,1,2)*8)+4,
+    hue:        hue1,
+    hue2:       (hue1+hueShift)%360,
+    toneSplit:  0.2+nm(g,19,20)*0.6, // 0.2..0.8 — where colors blend
+    sat:        50+nm(g,4,5,6)*50,
+    lit:        40+nm(g,6,7)*30,
+    glow:       8+nm(g,7,8,9)*30,
+    minReach:   minR,
+    maxReach:   maxR,
+    curveWidth: 0.15+nm(g,11,12,13)*1.4,
+    membrane:   0.2+nm(g,7,12,13)*0.5,
+    stiffness:  0.1+nm(g,5,6,7)*0.9,
+    // Scalloping
+    scallopLvl: Math.floor(nm(g,30,31)*2.5),  // 0..3 recursion depth
+    scallopAmp: 0.05+nm(g,31,32)*0.18,        // 0.05..0.35 displacement fraction
+    // Move
+    pulseStr:   0.8+nm(g,14,15,16)*4.0,
+    pulseRate:  0.6+nm(g,15,16,17)*3.5,
+    pulseProb:  0.3+nm(g,13,17,18)*0.7,
+    damping:    0.91+nm(g,18,19,20)*0.07,
+    // Lio
+    trails:     Math.floor(nm(g,21,22,23)*6)+1,
+    trailNodesBase: Math.floor(nm(g,23,24,25)*4)+4, // 4..7 base
+    trailNodesVar:  nm(g,25,26)*0.6,                 // 0..0.6 variance factor
+    segLenBase:  8+nm(g,24,25,26)*20,                // 8..28 base
+    segLenVar:   nm(g,26,27)*0.5,                     // 0..0.5 variance factor
+    stretch:    0.03+nm(g,26,27)*0.18,
+    thickness:  2.5+nm(g,31,32,33)*8.0,
+    taper:      0.3+nm(g,33,34)*0.7,
+    lioGravity: 30+nm(g,28,29,30)*120,
+    oscAmp:     3+nm(g,34,35,36)*25,
+    oscFreq:    0.5+nm(g,36,37)*3.5,
+    waveform:   nm(g,37,38),
+    oscPhOff:   nm(g,38,39)*2,
+  };
+}
+
+// Per-trail length parameters from genome — paired trails share same length for bilateral symmetry
+function trailParams(t, genome, trailIdx, nTrails){
+  // Compute pair index: center trail (if odd count) is unique, then pairs share index
+  let pairIdx;
+  const hasCenter=nTrails%2===1;
+  if(hasCenter){
+    if(trailIdx===0) pairIdx=0; // center gets its own
+    else pairIdx=Math.floor((trailIdx-1)/2)+1; // pairs share: (1,2)→1, (3,4)→2, etc
+  } else {
+    pairIdx=Math.floor(trailIdx/2); // pairs share: (0,1)→0, (2,3)→1, etc
+  }
+  const g1=BVAL[genome[(pairIdx*11+5)%BPC]]/3;
+  const g2=BVAL[genome[(pairIdx*7+13)%BPC]]/3;
+  // Node count: base ± variance (min 3, max 9)
+  const nVar=(g1-0.5)*2*t.trailNodesVar;
+  const nodes=Math.max(3, Math.min(9, Math.round(t.trailNodesBase+nVar*t.trailNodesBase)));
+  // Segment length: base ± variance (min 5)
+  const sVar=(g2-0.5)*2*t.segLenVar;
+  const segLen=Math.max(5, t.segLenBase+sVar*t.segLenBase);
+  return{nodes, segLen};
+}
+
+function tvs(t){
+  return{
+    "Seeds":t.seeds,"Hue":t.hue,"Hue 2":t.hue2,"Tone Split":t.toneSplit,
+    "Saturation":t.sat,
+    "Lightness":t.lit,"Glow":t.glow,"Min Reach":t.minReach,"Max Reach":t.maxReach,
+    "Curve Width":t.curveWidth,"Membrane":t.membrane,
+    "Stiffness":t.stiffness,
+    "Scallop Lvl":t.scallopLvl,"Scallop Amp":t.scallopAmp,
+    "Pulse Str":t.pulseStr,"Pulse Rate":t.pulseRate,"Pulse Prob":t.pulseProb,"Damping":t.damping,
+    "Trails":t.trails,"Trail Nodes":t.trailNodesBase,"Trail Var":t.trailNodesVar,
+    "Seg Length":t.segLenBase,"Seg Var":t.segLenVar,"Stretch":t.stretch,
+    "Thickness":t.thickness,"Taper":t.taper,"Lio Gravity":t.lioGravity,
+    "Osc Amp":t.oscAmp,"Osc Freq":t.oscFreq,"Waveform":t.waveform,"Osc Phase":t.oscPhOff,
+  };
+}
+
+function crossover(g1,g2){
+  let a=Math.floor(Math.random()*38)+1,b=Math.floor(Math.random()*38)+1;
+  if(a>b)[a,b]=[b,a];if(a===b)b=Math.min(b+1,39);
+  const c1=[...g1],c2=[...g2];
+  for(let i=a;i<=b;i++){c1[i]=g2[i];c2[i]=g1[i]}
+  function mut(g){return g.map(b=>Math.random()<0.04?BASES[Math.floor(Math.random()*4)]:b)}
+  return[mut(c1),mut(c2)];
+}
+
+// ── Drawing helpers ──
+function drawOpen(pts){
+  const n=pts.length;if(n<2)return;
+  if(n===2){ctx.moveTo(pts[0].x,pts[0].y);ctx.lineTo(pts[1].x,pts[1].y);return}
+  // Catmull-Rom
+  const pt=i=>i<0?pts[0]:i>=n?pts[n-1]:pts[i];
+  ctx.moveTo(pts[0].x,pts[0].y);
+  for(let i=0;i<n-1;i++){
+    const p0=pt(i-1),p1=pt(i),p2=pt(i+1),p3=pt(i+2);
+    const a=.5,d=(x,y)=>Math.pow(Math.hypot(y.x-x.x,y.y-x.y),a)||1e-6;
+    const t1=d(p0,p1),t2=t1+d(p1,p2),t3=t2+d(p2,p3);
+    const c1x=p1.x+(p2.x-p0.x)/t2*(t2-t1)/3,c1y=p1.y+(p2.y-p0.y)/t2*(t2-t1)/3;
+    const c2x=p2.x-(p3.x-p1.x)/(t3-t1)*(t2-t1)/3,c2y=p2.y-(p3.y-p1.y)/(t3-t1)*(t2-t1)/3;
+    ctx.bezierCurveTo(c1x,c1y,c2x,c2y,p2.x,p2.y);
+  }
+}
+
+// ── Build Lume shape: scatter DNA seeds on right half, mirror for perfect bilateral symmetry ──
+
+// Build STATIC right-side profile once — cached on creature
+// Returns {profile: [{x,y,r,angle}...], topY, botY}
+// Profile is ordered: top anchor → seeds sorted top-to-bottom → bottom anchor
+function buildStaticHull(t, genome){
+  const nSeeds=t.seeds;
+  const minR=t.minReach, maxR=t.maxReach;
+
+  // Generate seed points on RIGHT side (x > 0) from genome
+  const rightPts=[];
+  for(let i=0;i<nSeeds;i++){
+    const gx1=BVAL[genome[(i*7)%BPC]]/3;
+    const gx2=BVAL[genome[(i*7+3)%BPC]]/3;
+    const gy1=BVAL[genome[(i*5+1)%BPC]]/3;
+    const gy2=BVAL[genome[(i*5+11)%BPC]]/3;
+    const gy3=BVAL[genome[(i*3+17)%BPC]]/3;
+
+    const x=minR*0.1+(gx1*0.5+gx2*0.5)*(maxR*0.95-minR*0.1);
+    const yBlend=gy1*0.4+gy2*0.35+gy3*0.25;
+    const y=(yBlend-0.5)*maxR*1.8;
+    rightPts.push({x:Math.max(0.5,x), y});
+  }
+
+  // Find vertical extent for anchors
+  let seedMinY=Infinity, seedMaxY=-Infinity;
+  for(const p of rightPts){
+    if(p.y<seedMinY) seedMinY=p.y;
+    if(p.y>seedMaxY) seedMaxY=p.y;
+  }
+  const topY=seedMinY-maxR*0.15;
+  const botY=seedMaxY+maxR*0.1;
+
+  // Sort right seeds by angle from top-center going clockwise
+  // (angle measured from -Y axis, so top = smallest angle)
+  rightPts.sort((a,b)=>{
+    const aa=Math.atan2(a.x,-(a.y-topY));
+    const ab=Math.atan2(b.x,-(b.y-topY));
+    return aa-ab;
+  });
+
+  // Dedup close neighbors
+  const cleaned=[rightPts[0]];
+  for(let i=1;i<rightPts.length;i++){
+    const prev=cleaned[cleaned.length-1];
+    if(Math.hypot(rightPts[i].x-prev.x,rightPts[i].y-prev.y)>1.5){
+      cleaned.push(rightPts[i]);
+    }
+  }
+
+  // Build profile: top anchor → right seeds → bottom anchor
+  const profile=[
+    {x:0, y:topY},
+    ...cleaned,
+    {x:0, y:botY}
+  ].map(p=>({
+    x:p.x, y:p.y,
+    angle:Math.atan2(p.y,p.x),
+    r:Math.hypot(p.x,p.y)
+  }));
+
+  // Store seed positions for inner organelle rendering (right side only, will be mirrored)
+  profile.seeds=cleaned.map(p=>({x:p.x, y:p.y}));
+
+  return profile; // right-side profile only
+}
+
+// Apply jelly wobble to right profile, then mirror to produce full symmetric hull
+function buildLumeShape(t, profile, phase){
+  const softness=(1.0-t.stiffness);
+  const nProf=profile.length;
+
+  // Wobble right-side profile
+  const rightWobbled=profile.map((nd,i)=>{
+    const frac=i/(nProf-1); // 0=top, 1=bottom — used for symmetric wave indexing
+    const r=nd.r, a=nd.angle;
+    // Radial breathing: uses frac (not i) so mirrors get same displacement
+    const breath=Math.sin(phase*0.7+frac*Math.PI*2)*softness*4.5
+                +Math.sin(phase*1.4-frac*Math.PI*3+0.4)*softness*3.0
+                +Math.sin(phase*2.3+frac*Math.PI*1.5)*softness*1.8
+                +Math.sin(phase*0.4+frac*Math.PI*0.5)*softness*2.0;
+    // Tangential ripple: perpendicular to radius, same magnitude for mirrors
+    const ripple=Math.sin(phase*1.2+frac*Math.PI*4)*softness*3.5
+                +Math.cos(phase*0.6-frac*Math.PI*2.5)*softness*2.5
+                +Math.sin(phase*1.9+frac*Math.PI*5)*softness*1.5;
+    const newR=r+breath;
+    const nx=-Math.sin(a), ny=Math.cos(a);
+    return{
+      x:Math.cos(a)*newR+nx*ripple,
+      y:Math.sin(a)*newR+ny*ripple,
+      r:newR, angle:a, frac
+    };
+  });
+
+  // Build full hull: right side → reverse-mirrored left side
+  // Skip first (top anchor) and last (bottom anchor) from mirror to avoid duplicates
+  const hull=[];
+
+  // Right side: top anchor through seeds to bottom anchor
+  for(const p of rightWobbled){
+    hull.push({x:p.x, y:p.y, r:p.r, angle:p.angle});
+  }
+
+  // Left side: mirror of right, reversed (bottom anchor already placed, skip it;
+  // walk from second-to-last back to index 1, mirroring x)
+  for(let i=nProf-2;i>=1;i--){
+    const p=rightWobbled[i];
+    hull.push({x:-p.x, y:p.y, r:p.r, angle:Math.PI-p.angle});
+  }
+
+  return hull;
+}
+
+// ── Verlet ──
+function vpt(x,y){return{x,y,px:x,py:y}}
+function constrainChain(pts,segLen,maxStretch,iters){
+  const maxL=segLen*(1+maxStretch),minL=segLen*(1-maxStretch*.3);
+  for(let it=0;it<iters;it++){
+    for(let i=0;i<pts.length-1;i++){
+      const a=pts[i],b=pts[i+1];
+      const dx=b.x-a.x,dy=b.y-a.y,dist=Math.hypot(dx,dy)||.001;
+      if(dist>maxL||dist<minL){
+        const target=dist>maxL?maxL:minL;
+        const diff=(dist-target)/dist;
+        const ox=dx*diff*.5,oy=dy*diff*.5;
+        const bias=i===0?.9:.5;
+        a.x+=ox*bias;a.y+=oy*bias;b.x-=ox*(1-bias);b.y-=oy*(1-bias);
+      }
+    }
+  }
+}
+
+// ── Creature ──
+function createCreature(x,y,genome){
+  if(!genome)genome=rg();
+  const t=decode(genome),trails=[];
+  const nT=t.trails;
+
+  // Build static right-side profile and cache it
+  const staticHull=buildStaticHull(t,genome);
+  const nProf=staticHull.length; // profile length (right side only)
+
+  // Build full hull at rest (phase=0) for attachment computation
+  const fullHull=buildLumeShape(t,staticHull,0);
+  const hN=fullHull.length; // full hull = 2*nProf - 2
+
+  // Bottom anchor is at profile index nProf-1 (last element)
+  // In full hull, this is also at index nProf-1
+  const botIdx=nProf-1;
+  const botPt=fullHull[botIdx]; // should be at x≈0
+
+  // Build right-side bottom arc: walk backward from botIdx through right-side profile
+  // Profile goes top(0) → seeds → bottom(nProf-1), so bottom arc is near the end
+  const rightArc=[{x:botPt.x, y:botPt.y, d:0, hi:botIdx}];
+  let rDist=0;
+  for(let k=botIdx-1;k>=1;k--){
+    const prev=rightArc[rightArc.length-1];
+    const nd=fullHull[k];
+    rDist+=Math.hypot(nd.x-prev.x,nd.y-prev.y);
+    // Stop when we've gone past the widest part (seeds curving up)
+    if(nd.y<botPt.y-Math.abs(botPt.y)*0.8-t.maxReach*0.3) break;
+    rightArc.push({x:nd.x, y:nd.y, d:rDist, hi:k});
+  }
+
+  // Build left-side bottom arc: walk forward from botIdx through left side of hull
+  const leftArc=[{x:botPt.x, y:botPt.y, d:0, hi:botIdx}];
+  let lDist=0;
+  for(let k=botIdx+1;k<hN;k++){
+    const prev=leftArc[leftArc.length-1];
+    const nd=fullHull[k];
+    lDist+=Math.hypot(nd.x-prev.x,nd.y-prev.y);
+    if(nd.y<botPt.y-Math.abs(botPt.y)*0.8-t.maxReach*0.3) break;
+    leftArc.push({x:nd.x, y:nd.y, d:lDist, hi:k});
+  }
+
+  // Interpolate along arc, returning {x,y,hi,ht} for hull tracking
+  function interpArc(arc,d){
+    if(d<=0) return{x:arc[0].x,y:arc[0].y,hi:arc[0].hi,ht:0};
+    for(let i=1;i<arc.length;i++){
+      if(arc[i].d>=d){
+        const t2=(d-arc[i-1].d)/(arc[i].d-arc[i-1].d||1);
+        return{
+          x:arc[i-1].x+(arc[i].x-arc[i-1].x)*t2,
+          y:arc[i-1].y+(arc[i].y-arc[i-1].y)*t2,
+          hi:arc[i-1].hi, ht:0 // snap to nearest hull vertex for tracking
+        };
+      }
+    }
+    const last=arc[arc.length-1];
+    return{x:last.x,y:last.y,hi:last.hi,ht:0};
+  }
+
+  // Find closest hull edge for a point
+  function findHullEdge(px,py){
+    let bestIdx=0,bestT=0,bestD=Infinity;
+    for(let e=0;e<hN;e++){
+      const a2=fullHull[e],b2=fullHull[(e+1)%hN];
+      const ex=b2.x-a2.x,ey=b2.y-a2.y;
+      const el=ex*ex+ey*ey||1;
+      const t2=Math.max(0,Math.min(1,((px-a2.x)*ex+(py-a2.y)*ey)/el));
+      const qx=a2.x+ex*t2,qy=a2.y+ey*t2;
+      const d=Math.hypot(px-qx,py-qy);
+      if(d<bestD){bestD=d;bestIdx=e;bestT=t2}
+    }
+    return{hi:bestIdx,ht:bestT};
+  }
+
+  // Place trails: symmetric pairs + center for odd
+  const attachPts=[];
+  const arcLen=Math.min(rDist,lDist)||10;
+
+  if(nT===1){
+    attachPts.push({lx:botPt.x, ly:botPt.y, ...findHullEdge(botPt.x,botPt.y)});
+  } else {
+    const hasCenter=nT%2===1;
+    const nPairs=Math.floor(nT/2);
+    if(hasCenter){
+      attachPts.push({lx:botPt.x, ly:botPt.y, ...findHullEdge(botPt.x,botPt.y)});
+    }
+    for(let p=0;p<nPairs;p++){
+      const frac=nPairs===1?0.5:0.15+(p/(nPairs-1))*0.7;
+      const d=frac*arcLen;
+      const rp=interpArc(rightArc,d);
+      const lp=interpArc(leftArc,d);
+      const rEdge=findHullEdge(rp.x,rp.y);
+      const lEdge=findHullEdge(lp.x,lp.y);
+      attachPts.push({lx:rp.x, ly:rp.y, ...rEdge});
+      attachPts.push({lx:lp.x, ly:lp.y, ...lEdge});
+    }
+  }
+
+  for(let i=0;i<nT;i++){
+    const ap=attachPts[i];
+    const tp=trailParams(t, genome, i, nT);
+    const pts=[];
+    for(let j=0;j<tp.nodes;j++){
+      const px=x+ap.lx;
+      const py=y+ap.ly+j*tp.segLen;
+      pts.push(vpt(px,py));
+    }
+    trails.push({lx:ap.lx, ly:ap.ly, hullIdx:ap.hi, hullT:ap.ht, segLen:tp.segLen, trailGroup:i, points:pts});
+  }
+  return{
+    id:Date.now()+Math.random(),genome,traits:t,staticHull,x,y,gen:generation,
+    vx:0,vy:0,lean:0,birthFlash:1.0,
+    squishX:0,squishY:0, // collision squish vector (local space)
+    wanderAngle:Math.random()*Math.PI*2,
+    pulseTimer:Math.random()*t.pulseRate,pulseVisual:0,
+    phase:Math.random()*Math.PI*2,trails,
+    time:Math.random()*100,
+  };
+}
+
+function updateCreature(c,dt){
+  const isDrag=c.id===dragId;
+  const t=c.traits;
+  c.time+=dt;c.phase+=dt*1.5; // ~1.5 rad/s → full cycle every ~4.2s
+  c.pulseVisual*=.90;if(c.pulseVisual<.01)c.pulseVisual=0;
+  if(c.birthFlash>0)c.birthFlash*=0.97;if(c.birthFlash<.01)c.birthFlash=0;
+  // Decay squish from collisions
+  c.squishX*=0.85;c.squishY*=0.85;
+  if(Math.abs(c.squishX)<0.01)c.squishX=0;
+  if(Math.abs(c.squishY)<0.01)c.squishY=0;
+  // Clamp squish magnitude
+  const sqM=Math.hypot(c.squishX,c.squishY);
+  if(sqM>0.5){c.squishX*=0.5/sqM;c.squishY*=0.5/sqM}
+
+  if(!isDrag){
+    c.pulseTimer-=dt;
+    if(c.pulseTimer<=0){
+      c.pulseTimer=t.pulseRate*(.8+Math.random()*.4);
+      if(Math.random()<t.pulseProb){
+        c.vx+=Math.cos(c.wanderAngle)*t.pulseStr;
+        c.vy+=Math.sin(c.wanderAngle)*t.pulseStr;
+        c.pulseVisual=1.0;
+      }
+    }
+    c.vx*=t.damping;c.vy*=t.damping;
+    // Extra quadratic drag: faster creatures slow down faster
+    const spd=Math.hypot(c.vx,c.vy);
+    if(spd>0.1){
+      const drag=0.015*spd; // quadratic drag coefficient
+      const scale=Math.max(0,(spd-drag)/spd);
+      c.vx*=scale;c.vy*=scale;
+    }
+    c.wanderAngle+=Math.sin(c.time*.3)*.02;
+    // Ambient current: very gentle, doesn't override pulse dynamics
+    const driftX=Math.sin(c.time*0.15+c.id*3.7)*0.02;
+    const driftY=Math.cos(c.time*0.12+c.id*2.3)*0.015;
+    c.vx+=driftX;c.vy+=driftY;
+    // Boundary enforcement: soft repulsion at margin, hard reflect + clamp at edge
+    const margin=60, edge=15, maxR=t.maxReach;
+    const pad=edge+maxR*0.5;
+    const bottomPad=H*0.13+maxR*0.5; // keep above substrate (starts at 88%)
+    // Soft steering zone
+    if(c.x<margin+pad){const f=1-Math.max(0,(c.x-pad)/(margin));c.vx+=f*0.6;c.wanderAngle=Math.random()*.6-.3}
+    if(c.x>W-margin-pad){const f=1-Math.max(0,(W-pad-c.x)/(margin));c.vx-=f*0.6;c.wanderAngle=Math.PI+Math.random()*.6-.3}
+    if(c.y<margin+pad){const f=1-Math.max(0,(c.y-pad)/(margin));c.vy+=f*0.6;c.wanderAngle=Math.PI*.5+Math.random()*.6-.3}
+    if(c.y>H-margin-bottomPad){const f=1-Math.max(0,(H-bottomPad-c.y)/(margin));c.vy-=f*0.6;c.wanderAngle=-Math.PI*.5+Math.random()*.6-.3}
+    c.x+=c.vx;c.y+=c.vy;
+    // Hard clamp + velocity kill at edge
+    if(c.x<pad){c.x=pad;if(c.vx<0)c.vx*=-0.3}
+    if(c.x>W-pad){c.x=W-pad;if(c.vx>0)c.vx*=-0.3}
+    if(c.y<pad){c.y=pad;if(c.vy<0)c.vy*=-0.3}
+    if(c.y>H-bottomPad){c.y=H-bottomPad;if(c.vy>0)c.vy*=-0.3}
+  }
+  // Lean: blend velocity direction + trail pendulum
+  const speed=Math.hypot(c.vx,c.vy);
+  // Velocity lean: tilt forward into movement direction
+  const velLean=speed>0.15?Math.atan2(c.vx,1.0)*0.5*Math.min(speed/3,1):0;
+
+  // Trail pendulum lean (lighter contribution)
+  const cosL=Math.cos(-c.lean),sinL=Math.sin(-c.lean);
+  let trailCX=0,trailW=0;
+  for(const trail of c.trails){
+    for(let i=1;i<trail.points.length;i++){
+      const w=i;
+      const dx=trail.points[i].x-c.x;
+      trailCX+=(dx*cosL)*w;
+      trailW+=w;
+    }
+  }
+  if(trailW>0)trailCX/=trailW;
+  const trailLean=Math.atan2(trailCX,t.maxReach*0.5+10)*0.4;
+
+  // Blend: velocity dominant when moving, trail dominant when still
+  const velWeight=Math.min(speed/2,1);
+  const maxLean=0.8;
+  const targetLean=velLean*velWeight+trailLean*(1-velWeight*0.6);
+  c.lean+=(Math.max(-maxLean,Math.min(maxLean,targetLean))-c.lean)*0.1;
+  updateTrails(c,dt);
+}
+
+function updateTrails(c,dt){
+  const t=c.traits;
+  const grav=t.lioGravity,dtSq=dt*dt;
+  const cosA=Math.cos(c.lean),sinA=Math.sin(c.lean);
+  const ps=1-c.pulseVisual*.12; // pulse scale
+
+  // Compute wobbled hull for attachment tracking
+  const wHull=buildLumeShape(t,c.staticHull,c.phase);
+  const hN=wHull.length;
+
+  for(let ti=0;ti<c.trails.length;ti++){
+    const trail=c.trails[ti],pts=trail.points;
+    // Interpolate wobbled hull edge to get live attachment position
+    const hi=trail.hullIdx%hN, ht=trail.hullT;
+    const a=wHull[hi], b=wHull[(hi+1)%hN];
+    const lx=(a.x+(b.x-a.x)*ht)*ps;
+    const ly=(a.y+(b.y-a.y)*ht)*ps;
+    // Transform to world space via lean rotation
+    const wx=c.x+lx*cosA-ly*sinA;
+    const wy=c.y+lx*sinA+ly*cosA;
+    pts[0].x=wx;pts[0].y=wy;pts[0].px=wx;pts[0].py=wy;
+    for(let i=1;i<pts.length;i++){
+      const p=pts[i];const vx=(p.x-p.px)*.96,vy=(p.y-p.py)*.96;
+      p.px=p.x;p.py=p.y;p.x+=vx;p.y+=vy;p.y+=grav*dtSq*2.5;
+      const frac=i/pts.length;
+      const wT=frac*t.oscFreq+c.time*t.oscFreq*0.4+ti*t.oscPhOff*Math.PI+c.phase*0.7;
+      const oscF=wBlend(wT,t.waveform)*t.oscAmp*frac*dtSq*30;
+      const dx=p.x-pts[i-1].x,dy=p.y-pts[i-1].y,len=Math.hypot(dx,dy)||1;
+      p.x+=(-dy/len)*oscF;p.y+=(dx/len)*oscF;
+    }
+    constrainChain(pts,trail.segLen,t.stretch,8);
+
+    // Floor collision — keep trail nodes above substrate
+    const floorY=H*0.88-5;
+    for(let i=1;i<pts.length;i++){
+      if(pts[i].y>floorY){
+        pts[i].y=floorY;
+        pts[i].py=pts[i].y; // kill downward velocity
+      }
+    }
+  }
+}
+
+// ── Soft body collisions ──
+function softCollide(a,b){
+  const dx=b.x-a.x, dy=b.y-a.y;
+  const dist=Math.hypot(dx,dy)||0.01;
+
+  // Collision radius: use average of hull extents for each creature
+  const rA=a.traits.maxReach*0.7;
+  const rB=b.traits.maxReach*0.7;
+  const minDist=rA+rB;
+
+  if(dist>=minDist) return; // no overlap
+
+  // Penetration depth
+  const overlap=minDist-dist;
+  const nx=dx/dist, ny=dy/dist; // normal from A to B
+
+  // Soft spring force — proportional to overlap, not instant separation
+  const stiffness=0.25; // soft, not rigid
+  const force=overlap*stiffness;
+
+  // Mass proportional to size (heavier creatures move less)
+  const mA=rA*rA, mB=rB*rB;
+  const totalM=mA+mB||1;
+  const ratioA=mB/totalM; // lighter creature gets pushed more
+  const ratioB=mA/totalM;
+
+  // Don't push dragged creatures
+  const aFixed=a.id===dragId;
+  const bFixed=b.id===dragId;
+
+  if(!aFixed){
+    a.x-=nx*force*ratioA;
+    a.y-=ny*force*ratioA;
+    // Add gentle velocity deflection
+    a.vx-=nx*force*ratioA*0.15;
+    a.vy-=ny*force*ratioA*0.15;
+  }
+  if(!bFixed){
+    b.x+=nx*force*ratioB;
+    b.y+=ny*force*ratioB;
+    b.vx+=nx*force*ratioB*0.15;
+    b.vy+=ny*force*ratioB*0.15;
+  }
+
+  // If one is fixed (dragged), the other takes full push
+  if(aFixed&&!bFixed){
+    b.x+=nx*force*0.5;
+    b.y+=ny*force*0.5;
+  }
+  if(bFixed&&!aFixed){
+    a.x-=nx*force*0.5;
+    a.y-=ny*force*0.5;
+  }
+
+  // Accumulate squish vector for visual deformation
+  const squishMag=overlap/(minDist)*0.3; // 0..0.3 normalized
+  if(!aFixed){
+    a.squishX+=nx*squishMag;
+    a.squishY+=ny*squishMag;
+  }
+  if(!bFixed){
+    b.squishX-=nx*squishMag;
+    b.squishY-=ny*squishMag;
+  }
+}
+
+// ── Draw Lio trail ──
+function drawLioTrail(pts,hue1,hue2,sat,lit,glow,baseW,taper){
+  if(pts.length<2)return;
+  ctx.save();
+  ctx.shadowColor=`hsla(${hue1},${sat}%,${Math.min(lit+20,85)}%,0.5)`;
+  ctx.shadowBlur=glow*.3;
+
+  // Draw thin segments between nodes (butt caps = no overlap)
+  ctx.lineCap='butt';ctx.lineJoin='miter';
+  for(let i=0;i<pts.length-1;i++){
+    const frac=i/(pts.length-1);
+    const w=baseW*(1-frac*taper)*0.45;
+    if(w<.1)break;
+    const alpha=Math.max(.6*(1-frac*.85),.02);
+    const h=frac<0.4?hue1:hue1+(hue2-hue1)*((frac-0.4)/0.6);
+    ctx.beginPath();
+    ctx.moveTo(pts[i].x,pts[i].y);
+    ctx.lineTo(pts[i+1].x,pts[i+1].y);
+    ctx.strokeStyle=`hsla(${h},${sat}%,${Math.min(lit+10,80)}%,${alpha})`;
+    ctx.lineWidth=w;ctx.stroke();
+  }
+
+  // Draw joint nodes as circles — color shifts along length
+  for(let i=0;i<pts.length;i++){
+    const frac=i/(pts.length-1);
+    const r=baseW*(1-frac*taper)*0.38;
+    if(r<.2)break;
+    const alpha=Math.max(.75*(1-frac*.8),.04);
+    const h=frac<0.4?hue1:hue1+(hue2-hue1)*((frac-0.4)/0.6);
+    ctx.beginPath();ctx.arc(pts[i].x,pts[i].y,r,0,Math.PI*2);
+    ctx.fillStyle=`hsla(${h},${sat}%,${Math.min(lit+15,85)}%,${alpha})`;
+    ctx.fill();
+    ctx.beginPath();ctx.arc(pts[i].x,pts[i].y,r,0,Math.PI*2);
+    ctx.strokeStyle=`hsla(${h},${sat}%,${Math.min(lit+30,93)}%,${alpha*0.5})`;
+    ctx.lineWidth=0.6;ctx.stroke();
+  }
+
+  // Core highlight line
+  ctx.shadowBlur=glow*.1;
+  const gr=ctx.createLinearGradient(pts[0].x,pts[0].y,pts[pts.length-1].x,pts[pts.length-1].y);
+  gr.addColorStop(0,`hsla(${hue1},${Math.max(sat-20,30)}%,${Math.min(lit+32,93)}%,0.35)`);
+  gr.addColorStop(.4,`hsla(${hue2},${sat}%,${Math.min(lit+20,85)}%,0.08)`);
+  gr.addColorStop(1,`hsla(${hue2},${sat}%,${lit}%,0)`);
+  ctx.strokeStyle=gr;ctx.lineWidth=Math.max(baseW*.12,.3);ctx.lineCap='round';
+  ctx.beginPath();drawOpen(pts);ctx.stroke();
+  ctx.restore();
+}
+
+// ── Draw Lume (kaleidoscope) ──
+
+// Recursive scallop: subdivide midpoints outward
+function scallopEdge(ax,ay,bx,by,depth,amp,outX,outY){
+  if(depth<=0){return[{x:bx,y:by}]}
+  const mx=(ax+bx)/2, my=(ay+by)/2;
+  const dx=bx-ax, dy=by-ay;
+  const len=Math.hypot(dx,dy)||1;
+  // Perpendicular outward (away from center)
+  const px=-dy/len, py=dx/len;
+  // Push midpoint outward from origin
+  const dot=mx*px+my*py;
+  const sign=dot>=0?1:-1;
+  const disp=len*amp*sign;
+  const sx=mx+px*disp, sy=my+py*disp;
+  const left=scallopEdge(ax,ay,sx,sy,depth-1,amp*0.55,outX,outY);
+  const right=scallopEdge(sx,sy,bx,by,depth-1,amp*0.55,outX,outY);
+  return[...left,...right];
+}
+
+function drawLume(c,selType){
+  const t=c.traits;
+  ctx.save();
+  ctx.translate(c.x,c.y);
+  ctx.rotate(c.lean);
+
+  const nodes=buildLumeShape(t,c.staticHull,c.phase);
+  const h1=t.hue, h2=t.hue2, ts=t.toneSplit;
+  const gc=`hsla(${h1},${t.sat}%,${Math.min(t.lit+20,85)}%,0.6)`;
+  const pg=c.pulseVisual*15;
+  const ps=1-c.pulseVisual*.12;
+  const cw=t.curveWidth;
+  const cornerFrac=0.3+cw*0.2;
+  const softness=(1.0-t.stiffness);
+
+  // Scale hull for pulse + apply collision squish deformation
+  // Transform squish from world to local space (undo lean rotation)
+  const cosLean=Math.cos(-c.lean), sinLean=Math.sin(-c.lean);
+  const sqLX=c.squishX*cosLean-c.squishY*sinLean;
+  const sqLY=c.squishX*sinLean+c.squishY*cosLean;
+  const sqMag=Math.hypot(sqLX,sqLY);
+
+  const loop=nodes.map(nd=>{
+    let x=nd.x*ps, y=nd.y*ps;
+    if(sqMag>0.005){
+      const r=nd.r||Math.hypot(nd.x,nd.y)||1;
+      // How much this vertex faces the squish direction (-1 to 1)
+      const dot=(nd.x*sqLX+nd.y*sqLY)/(r*sqMag);
+      // Vertices facing squish compress, opposite expand (volume-preserving)
+      const compress=dot*sqMag*r*0.8;  // push inward on collision side
+      const expand=(1-Math.abs(dot))*sqMag*r*0.3; // bulge perpendicular
+      // Apply along radial direction
+      const nx=nd.x/r, ny=nd.y/r;
+      x+=(-nx*compress+ny*expand)*ps;
+      y+=(-ny*compress+nx*expand)*ps;
+    }
+    return{x,y,r:nd.r*ps};
+  });
+
+  function traceLoop(lp,sLvl,sAmp){
+    const N=lp.length;
+    const verts=[];
+    for(let i=0;i<N;i++){
+      const prev=lp[(i-1+N)%N],curr=lp[i],next=lp[(i+1)%N];
+      const tpx=prev.x-curr.x,tpy=prev.y-curr.y;
+      const tnx=next.x-curr.x,tny=next.y-curr.y;
+      const dp=Math.hypot(tpx,tpy)||1;
+      const dn=Math.hypot(tnx,tny)||1;
+      const cut=Math.min(dp,dn)*cornerFrac;
+      verts.push({
+        sx:curr.x+tpx/dp*cut, sy:curr.y+tpy/dp*cut,
+        cx:curr.x, cy:curr.y,
+        ex:curr.x+tnx/dn*cut, ey:curr.y+tny/dn*cut
+      });
+    }
+    for(let i=0;i<N;i++){
+      const v=verts[i];
+      const pv=verts[(i-1+N)%N];
+      if(i===0){
+        if(sLvl>0){
+          const pts=scallopEdge(verts[N-1].ex,verts[N-1].ey,v.sx,v.sy,sLvl,sAmp);
+          ctx.moveTo(verts[N-1].ex,verts[N-1].ey);
+          for(const p of pts) ctx.lineTo(p.x,p.y);
+        } else {
+          ctx.moveTo(v.sx,v.sy);
+        }
+      } else {
+        if(sLvl>0){
+          const pts=scallopEdge(pv.ex,pv.ey,v.sx,v.sy,sLvl,sAmp);
+          for(const p of pts) ctx.lineTo(p.x,p.y);
+        } else {
+          ctx.lineTo(v.sx,v.sy);
+        }
+      }
+      ctx.quadraticCurveTo(v.cx,v.cy,v.ex,v.ey);
+    }
+    if(sLvl>0){
+      const pts=scallopEdge(verts[N-1].ex,verts[N-1].ey,verts[0].sx,verts[0].sy,sLvl,sAmp);
+      for(const p of pts) ctx.lineTo(p.x,p.y);
+    }
+    ctx.closePath();
+  }
+
+  function tracePath(sLvl,sAmp){
+    ctx.beginPath();
+    traceLoop(loop,sLvl,sAmp);
+  }
+
+  const sL=t.scallopLvl, sA=t.scallopAmp;
+
+  // Bounding box for gradient positioning
+  let minY=Infinity,maxY=-Infinity;
+  for(const nd of loop){if(nd.y<minY)minY=nd.y;if(nd.y>maxY)maxY=nd.y}
+  const spanY=maxY-minY||1;
+  const splitY=minY+spanY*ts; // where hue1 transitions to hue2
+
+  // Two-tone linear gradient (top→bottom)
+  const bg=ctx.createLinearGradient(0,minY-2,0,maxY+2);
+  bg.addColorStop(0,`hsla(${h1},${Math.max(t.sat-5,30)}%,${Math.min(t.lit+20,88)}%,${t.membrane*.7})`);
+  bg.addColorStop(Math.max(0,ts-0.15),`hsla(${h1},${t.sat}%,${t.lit}%,${t.membrane*.5})`);
+  bg.addColorStop(Math.min(1,ts+0.15),`hsla(${h2},${t.sat}%,${t.lit}%,${t.membrane*.5})`);
+  bg.addColorStop(1,`hsla(${h2},${Math.max(t.sat-10,25)}%,${Math.max(t.lit-8,25)}%,${t.membrane*.25})`);
+
+  // Outer glow layer
+  ctx.shadowColor=gc;ctx.shadowBlur=t.glow*1.8+pg;
+  tracePath(sL,sA);
+  ctx.fillStyle=`hsla(${h1},${t.sat}%,${Math.min(t.lit+15,82)}%,${.04+c.pulseVisual*.06})`;
+  ctx.fill();
+
+  // Main two-tone fill
+  ctx.shadowBlur=t.glow*.6+pg*.4;
+  tracePath(sL,sA);
+  ctx.fillStyle=bg;ctx.fill();
+
+  // Inner organelles: seed points visible through membrane
+  ctx.shadowBlur=0;
+  const seeds=c.staticHull.seeds;
+  if(seeds&&seeds.length>0){
+    const orgAlpha=t.membrane*0.35;
+    for(const seed of seeds){
+      // Wobble seed positions slightly with phase
+      const sx=seed.x, sy=seed.y;
+      const wobX=Math.sin(c.phase*0.5+sx*0.1)*softness*2;
+      const wobY=Math.cos(c.phase*0.6+sy*0.1)*softness*2;
+      const or=3+t.curveWidth*2.5; // organelle radius
+      // Right side
+      const rx=(sx+wobX)*ps, ry=(sy+wobY)*ps;
+      const og=ctx.createRadialGradient(rx,ry,0,rx,ry,or);
+      const orgHue=(h1+h2)/2;
+      og.addColorStop(0,`hsla(${orgHue},${Math.min(t.sat+10,95)}%,${Math.min(t.lit+30,92)}%,${orgAlpha})`);
+      og.addColorStop(0.5,`hsla(${orgHue},${t.sat}%,${t.lit+15}%,${orgAlpha*0.5})`);
+      og.addColorStop(1,`hsla(${orgHue},${t.sat}%,${t.lit}%,0)`);
+      ctx.beginPath();ctx.arc(rx,ry,or,0,Math.PI*2);ctx.fillStyle=og;ctx.fill();
+      // Mirror (left side)
+      const lx=(-sx-wobX)*ps;
+      const og2=ctx.createRadialGradient(lx,ry,0,lx,ry,or);
+      og2.addColorStop(0,`hsla(${orgHue},${Math.min(t.sat+10,95)}%,${Math.min(t.lit+30,92)}%,${orgAlpha})`);
+      og2.addColorStop(0.5,`hsla(${orgHue},${t.sat}%,${t.lit+15}%,${orgAlpha*0.5})`);
+      og2.addColorStop(1,`hsla(${orgHue},${t.sat}%,${t.lit}%,0)`);
+      ctx.beginPath();ctx.arc(lx,ry,or,0,Math.PI*2);ctx.fillStyle=og2;ctx.fill();
+    }
+  }
+
+  // Edge stroke — blended color
+  const midHue=(h1+h2)/2;
+  ctx.shadowBlur=t.glow*.3;
+  tracePath(sL,sA);
+  ctx.strokeStyle=`hsla(${midHue},${t.sat}%,${Math.min(t.lit+30,92)}%,${.25+t.membrane*.3})`;
+  ctx.lineWidth=1+t.membrane*1.2;ctx.lineJoin='round';
+  ctx.stroke();
+
+  // Center glow (uses primary hue)
+  const cnr=6+t.curveWidth*4;
+  const cyOff=minY*0.3;
+  const cg=ctx.createRadialGradient(0,cyOff,0,0,cyOff,cnr);
+  cg.addColorStop(0,`hsla(${h1},${Math.max(t.sat-20,20)}%,${Math.min(t.lit+35,95)}%,${t.membrane*.6})`);
+  cg.addColorStop(1,`hsla(${h1},${t.sat}%,${t.lit}%,0)`);
+  ctx.shadowColor=gc;ctx.shadowBlur=t.glow;
+  ctx.beginPath();ctx.arc(0,cyOff,cnr,0,Math.PI*2);ctx.fillStyle=cg;ctx.fill();
+
+  // Birth flash — fades from white glow
+  if(c.birthFlash>0.01){
+    const bf=c.birthFlash;
+    const bfr=t.maxReach*1.2*bf+t.maxReach*0.3;
+    const bfg=ctx.createRadialGradient(0,0,0,0,0,bfr);
+    bfg.addColorStop(0,`hsla(${h1},30%,95%,${bf*0.4})`);
+    bfg.addColorStop(0.4,`hsla(${h1},${t.sat}%,${Math.min(t.lit+30,90)}%,${bf*0.2})`);
+    bfg.addColorStop(1,`hsla(${h1},${t.sat}%,${t.lit}%,0)`);
+    ctx.beginPath();ctx.arc(0,0,bfr,0,Math.PI*2);ctx.fillStyle=bfg;ctx.fill();
+  }
+
+  if(selType){
+    const col=selType===1?"rgba(80,170,240,0.55)":"rgba(240,160,60,0.55)";
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.setLineDash([5,5]);
+    ctx.beginPath();ctx.arc(0,0,t.maxReach+12,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(0,0,t.maxReach+12,0,Math.PI*2);
+    ctx.fillStyle=selType===1?"rgba(80,170,240,0.08)":"rgba(240,160,60,0.08)";ctx.fill();
+    ctx.font="bold 10px 'JetBrains Mono',monospace";ctx.textAlign="center";
+    ctx.fillStyle=selType===1?"#5ae":"#ea5";
+    ctx.fillText(selType===1?"P1":"P2",0,-t.maxReach-18);
+  }
+  ctx.restore();
+}
+function drawCreature(c,selType){
+  const t=c.traits;
+  for(const trail of c.trails){
+    drawLioTrail(trail.points,t.hue,t.hue2,t.sat,t.lit,t.glow,t.thickness,t.taper);
+  }
+  drawLume(c,selType);
+}
+
+// ── Particles ──
+function initP(){particles=Array.from({length:40},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.1,vy:-Math.random()*.06-.01,sz:Math.random()*1.3+.3,a:Math.random()*.2+.03}))}
+function drawP(){for(const p of particles){p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.sz,0,Math.PI*2);ctx.fillStyle=`rgba(160,200,230,${p.a})`;ctx.fill()}}
+
+// ── Substrate: rocks, plants, sand bed ──
+let substrate={rocks:[],plants:[],pebbles:[]};
+function seededRand(s){return function(){s=(s*9301+49297)%233280;return s/233280}}
+
+function initSubstrate(){
+  const rng=seededRand(42);
+  const baseY=H*0.88; // substrate starts at 88% height
+  const rocks=[], plants=[], pebbles=[];
+
+  // Sand bed height map — gentle rolling dunes
+  const sandPts=[];
+  const nSand=Math.ceil(W/12)+1;
+  for(let i=0;i<nSand;i++){
+    const x=i*12;
+    const y=baseY+Math.sin(i*0.3)*6+Math.sin(i*0.13+2)*4+rng()*5;
+    sandPts.push({x,y});
+  }
+  substrate.sandPts=sandPts;
+  substrate.baseY=baseY;
+
+  // Rocks: irregular polygons
+  const nRocks=Math.floor(3+rng()*5);
+  for(let i=0;i<nRocks;i++){
+    const cx=W*0.08+rng()*W*0.84;
+    const cy=baseY+rng()*12+4;
+    const baseR=8+rng()*22;
+    const nSides=Math.floor(4+rng()*4); // 4-7 sides
+    const hue=200+rng()*40; // blue-grey-teal
+    const lit=12+rng()*14;
+    const verts=[];
+    for(let j=0;j<nSides;j++){
+      const a=(j/nSides)*Math.PI*2-Math.PI/2;
+      const r=baseR*(0.6+rng()*0.5);
+      verts.push({x:cx+Math.cos(a)*r, y:cy+Math.sin(a)*r*0.6}); // squash vertically
+    }
+    rocks.push({verts,hue,lit,cx,cy,r:baseR});
+  }
+  // Sort rocks by Y so further ones draw first
+  rocks.sort((a,b)=>a.cy-b.cy);
+  substrate.rocks=rocks;
+
+  // Pebbles: small circles scattered across substrate
+  const nPeb=Math.floor(15+rng()*20);
+  for(let i=0;i<nPeb;i++){
+    const x=rng()*W;
+    const y=baseY+rng()*18-4;
+    const r=1+rng()*3;
+    const lit=10+rng()*12;
+    pebbles.push({x,y,r,lit});
+  }
+  substrate.pebbles=pebbles;
+
+  // Plants: stalks with leaf blades
+  const nPlants=Math.floor(4+rng()*6);
+  for(let i=0;i<nPlants;i++){
+    const rootX=W*0.05+rng()*W*0.9;
+    const rootY=baseY+rng()*6;
+    const nStalks=Math.floor(2+rng()*4); // 2-5 stalks per cluster
+    const plantHue=100+rng()*60; // greens to teals
+    const stalks=[];
+    for(let s=0;s<nStalks;s++){
+      const height=25+rng()*50;
+      const sway=0.15+rng()*0.3; // sway amplitude
+      const swaySpeed=0.4+rng()*0.6;
+      const swayPhase=rng()*Math.PI*2;
+      const curve=(rng()-0.5)*0.4; // lean bias
+      const nSegs=Math.floor(3+rng()*3); // 3-5 segments
+      const width=1.5+rng()*2.5;
+      // Leaf blades along stalk
+      const leaves=[];
+      const nLeaves=Math.floor(1+rng()*3);
+      for(let l=0;l<nLeaves;l++){
+        const frac=0.3+rng()*0.5; // position along stalk
+        const side=rng()>0.5?1:-1;
+        const len=6+rng()*12;
+        const leafAngle=side*(0.3+rng()*0.6);
+        leaves.push({frac,side,len,leafAngle,hueOff:rng()*20-10});
+      }
+      stalks.push({height,sway,swaySpeed,swayPhase,curve,nSegs,width,leaves,
+                    offX:(rng()-0.5)*12}); // cluster spread
+    }
+    plants.push({rootX,rootY,stalks,hue:plantHue,sat:30+rng()*25,lit:20+rng()*15});
+  }
+  substrate.plants=plants;
+}
+
+function drawSubstrate(time){
+  const t=time*0.001;
+
+  // Sand bed
+  ctx.beginPath();
+  const sp=substrate.sandPts;
+  if(sp&&sp.length>0){
+    ctx.moveTo(sp[0].x,sp[0].y);
+    for(let i=1;i<sp.length;i++) ctx.lineTo(sp[i].x,sp[i].y);
+    ctx.lineTo(W,H+5);ctx.lineTo(0,H+5);ctx.closePath();
+    const sg=ctx.createLinearGradient(0,substrate.baseY-5,0,H);
+    sg.addColorStop(0,"#0c1a24");
+    sg.addColorStop(0.3,"#0a1520");
+    sg.addColorStop(1,"#060e18");
+    ctx.fillStyle=sg;ctx.fill();
+    // Sand edge highlight
+    ctx.beginPath();
+    ctx.moveTo(sp[0].x,sp[0].y);
+    for(let i=1;i<sp.length;i++) ctx.lineTo(sp[i].x,sp[i].y);
+    ctx.strokeStyle="rgba(80,110,130,0.15)";ctx.lineWidth=1.5;ctx.stroke();
+  }
+
+  // Pebbles
+  for(const p of substrate.pebbles){
+    ctx.beginPath();ctx.ellipse(p.x,p.y,p.r,p.r*0.65,0,0,Math.PI*2);
+    ctx.fillStyle=`hsl(210,15%,${p.lit}%)`;ctx.fill();
+    ctx.strokeStyle=`hsl(210,10%,${p.lit+5}%)`;ctx.lineWidth=0.4;ctx.stroke();
+  }
+
+  // Rocks
+  for(const rock of substrate.rocks){
+    const v=rock.verts;
+    // Shadow
+    ctx.beginPath();
+    ctx.moveTo(v[0].x+3,v[0].y+2);
+    for(let i=1;i<v.length;i++) ctx.lineTo(v[i].x+3,v[i].y+2);
+    ctx.closePath();
+    ctx.fillStyle="rgba(0,0,0,0.2)";ctx.fill();
+    // Main body
+    ctx.beginPath();
+    ctx.moveTo(v[0].x,v[0].y);
+    for(let i=1;i<v.length;i++) ctx.lineTo(v[i].x,v[i].y);
+    ctx.closePath();
+    const rg=ctx.createLinearGradient(rock.cx,rock.cy-rock.r*0.4,rock.cx,rock.cy+rock.r*0.3);
+    rg.addColorStop(0,`hsl(${rock.hue},18%,${rock.lit+8}%)`);
+    rg.addColorStop(1,`hsl(${rock.hue},12%,${rock.lit}%)`);
+    ctx.fillStyle=rg;ctx.fill();
+    // Edge highlight
+    ctx.strokeStyle=`hsla(${rock.hue},15%,${rock.lit+12}%,0.3)`;
+    ctx.lineWidth=0.8;ctx.lineJoin="round";ctx.stroke();
+    // Top shine
+    ctx.beginPath();
+    ctx.moveTo(v[0].x,v[0].y);
+    const mid=Math.floor(v.length/2);
+    for(let i=1;i<=mid;i++) ctx.lineTo(v[i].x,v[i].y);
+    ctx.strokeStyle=`hsla(${rock.hue},20%,${rock.lit+18}%,0.15)`;
+    ctx.lineWidth=1.2;ctx.stroke();
+  }
+
+  // Plants: swaying stalks with leaf blades
+  for(const plant of substrate.plants){
+    for(const stalk of plant.stalks){
+      const rootX=plant.rootX+stalk.offX;
+      const rootY=plant.rootY;
+      const swayNow=Math.sin(t*stalk.swaySpeed+stalk.swayPhase)*stalk.sway;
+      // Build stalk points from root upward
+      const pts=[{x:rootX,y:rootY}];
+      for(let s=1;s<=stalk.nSegs;s++){
+        const frac=s/stalk.nSegs;
+        const y=rootY-stalk.height*frac;
+        // Cumulative sway increases toward tip
+        const xOff=swayNow*frac*frac*stalk.height*0.4+stalk.curve*frac*stalk.height*0.3;
+        pts.push({x:rootX+xOff, y});
+      }
+      // Draw stalk
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x,pts[0].y);
+      for(let s=1;s<pts.length;s++){
+        // Slight curve between segments
+        const prev=pts[s-1],curr=pts[s];
+        const cpx=(prev.x+curr.x)/2+swayNow*3*(s/stalk.nSegs);
+        const cpy=(prev.y+curr.y)/2;
+        ctx.quadraticCurveTo(cpx,cpy,curr.x,curr.y);
+      }
+      const stalkAlpha=0.4+stalk.width*0.08;
+      ctx.strokeStyle=`hsla(${plant.hue},${plant.sat}%,${plant.lit}%,${stalkAlpha})`;
+      ctx.lineWidth=stalk.width;ctx.lineCap="round";ctx.stroke();
+      // Thinner bright core
+      ctx.strokeStyle=`hsla(${plant.hue},${plant.sat+10}%,${plant.lit+12}%,${stalkAlpha*0.4})`;
+      ctx.lineWidth=stalk.width*0.35;ctx.stroke();
+
+      // Leaf blades
+      for(const leaf of stalk.leaves){
+        // Interpolate position along stalk
+        const segF=leaf.frac*stalk.nSegs;
+        const si=Math.min(Math.floor(segF),pts.length-2);
+        const sf=segF-si;
+        const bx=pts[si].x+(pts[si+1].x-pts[si].x)*sf;
+        const by=pts[si].y+(pts[si+1].y-pts[si].y)*sf;
+        // Leaf direction: angled from stalk
+        const stalkAngle=Math.atan2(pts[si+1].y-pts[si].y,pts[si+1].x-pts[si].x);
+        const la=stalkAngle+leaf.leafAngle+swayNow*0.3*leaf.side;
+        const tipX=bx+Math.cos(la)*leaf.len;
+        const tipY=by+Math.sin(la)*leaf.len;
+        // Draw as elongated triangle
+        const perp=la+Math.PI/2;
+        const hw=1.5+stalk.width*0.3;
+        ctx.beginPath();
+        ctx.moveTo(bx+Math.cos(perp)*hw,by+Math.sin(perp)*hw);
+        ctx.lineTo(tipX,tipY);
+        ctx.lineTo(bx-Math.cos(perp)*hw,by-Math.sin(perp)*hw);
+        ctx.closePath();
+        const lh=plant.hue+leaf.hueOff;
+        ctx.fillStyle=`hsla(${lh},${plant.sat+5}%,${plant.lit+6}%,${stalkAlpha*0.7})`;
+        ctx.fill();
+        // Leaf midrib
+        ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(tipX,tipY);
+        ctx.strokeStyle=`hsla(${lh},${plant.sat}%,${plant.lit+15}%,${stalkAlpha*0.3})`;
+        ctx.lineWidth=0.5;ctx.stroke();
+      }
+    }
+  }
+}
+
+function resize(){
+  const wrap=document.getElementById("tank-wrap");
+  W=wrap.clientWidth;H=wrap.clientHeight;
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  // Re-clamp all creatures into new bounds
+  for(const c of creatures){
+    const pad=15+c.traits.maxReach*0.5;
+    const bpad=H*0.13+c.traits.maxReach*0.5;
+    c.x=Math.max(pad,Math.min(W-pad,c.x));
+    c.y=Math.max(pad,Math.min(H-bpad,c.y));
+  }
+}
+
+function hitCreature(mx,my){
+  let cl=null,cd=Infinity;
+  let nearCl=null,nearD=Infinity; // fallback: nearest by distance
+  for(const c of creatures){
+    const d=Math.hypot(c.x-mx,c.y-my);
+    const r=c.traits.maxReach*1.3+15;
+    if(d>r)continue;
+    // Transform mouse into creature local space (undo lean + translate)
+    const dx=mx-c.x, dy=my-c.y;
+    const cosL=Math.cos(-c.lean), sinL=Math.sin(-c.lean);
+    const lx=dx*cosL-dy*sinL, ly=dx*sinL+dy*cosL;
+    // Point-in-polygon on wobbled hull
+    const hull=buildLumeShape(c.traits,c.staticHull,c.phase);
+    const n=hull.length;
+    let inside=false;
+    for(let i=0,j=n-1;i<n;j=i++){
+      const xi=hull[i].x,yi=hull[i].y,xj=hull[j].x,yj=hull[j].y;
+      if(((yi>ly)!==(yj>ly))&&(lx<(xj-xi)*(ly-yi)/(yj-yi)+xi))inside=!inside;
+    }
+    if(inside&&d<cd){cl=c;cd=d}
+    // Track nearest creature within generous radius as fallback
+    if(d<nearD){nearD=d;nearCl=c}
+  }
+  // Prefer exact hull hit; fall back to nearest within radius
+  return cl||nearCl;
+}
+
+function handleSelect(mx,my){
+  const cl=hitCreature(mx,my);
+  if(!cl){parent1Id=parent2Id=viewId=null}
+  else handleSelectById(cl.id);
+  updUI();
+}
+function handleSelectById(cid){
+  const cl=creatures.find(c=>c.id===cid);
+  if(!cl)return;
+  if(!parent1Id||cl.id===parent1Id){
+    if(cl.id===parent1Id){parent1Id=parent2Id;parent2Id=null;viewId=parent1Id}
+    else{parent1Id=cl.id;viewId=cl.id}
+  }else if(cl.id===parent2Id){parent2Id=null;viewId=parent1Id}
+  else{parent2Id=cl.id;viewId=cl.id}
+  updUI();
+}
+function getSelType(c){if(c.id===parent1Id)return 1;if(c.id===parent2Id)return 2;return 0}
+
+function startDrag(mx,my){const cl=hitCreature(mx,my);if(cl){dragId=cl.id;dragOff.x=cl.x-mx;dragOff.y=cl.y-my;isDragging=false;dragStartTime=performance.now();dragStartX=mx;dragStartY=my;canvas.style.cursor="grabbing"}else{dragId=null;isDragging=false;dragStartTime=performance.now();dragStartX=mx;dragStartY=my}}
+function moveDrag(mx,my){if(!dragId)return;const c=creatures.find(c=>c.id===dragId);if(!c)return;const dx=mx-dragStartX,dy=my-dragStartY;if(!isDragging&&Math.hypot(dx,dy)<5)return;isDragging=true;const pad=15+c.traits.maxReach*0.5;const bpad=H*0.13+c.traits.maxReach*0.5;c.x=Math.max(pad,Math.min(W-pad,mx+dragOff.x));c.y=Math.max(pad,Math.min(H-bpad,my+dragOff.y));c.vx=0;c.vy=0}
+function endDrag(mx,my){if(dragId){const wasDrag=isDragging;const clickedId=dragId;const c=creatures.find(c=>c.id===dragId);if(c){c.vx=0;c.vy=0}canvas.style.cursor="crosshair";dragId=null;if(!wasDrag)handleSelectById(clickedId)}else{if(!isDragging){const moved=Math.hypot(mx-dragStartX,my-dragStartY);if(moved<5)handleSelect(mx,my)}canvas.style.cursor="crosshair"}}
+
+// ── UI ──
+function updUI(){updCnt();updBreed();updStatus();buildPanel();document.getElementById("hint").style.display=(parent1Id||parent2Id)?"none":""}
+function updCnt(){document.getElementById("cnt").textContent=creatures.length+" in tank"}
+function updBreed(){document.getElementById("breed-btn").classList.toggle("show",!!(parent1Id&&parent2Id));document.getElementById("sell-btn").classList.toggle("show",!!(parent1Id&&!parent2Id))}
+function updStatus(){
+  const bar=document.getElementById("status-bar");
+  const p1=creatures.find(c=>c.id===parent1Id),p2=creatures.find(c=>c.id===parent2Id);
+  if(!p1&&!p2){bar.classList.remove("show");return}
+  bar.classList.add("show");let h="";
+  if(p1)h+=`<span class="status-chip p1"><span class="dot p1"></span>P1 G${p1.gen}</span>`;
+  if(p1&&!p2)h+=`<span style="color:#3a5a6a;margin:0 4px">tap another</span>`;
+  if(p2)h+=`<span class="status-chip p2"><span class="dot p2"></span>P2 G${p2.gen}</span>`;
+  if(p1&&p2)h+=`<span style="color:#8a6ab0;margin:0 4px">ready</span>`;
+  document.getElementById("status-text").innerHTML=h;
+}
+function buildPanel(){
+  const show=viewId||parent1Id;const sel=creatures.find(c=>c.id===show);
+  if(!sel){
+    document.getElementById("sel-info").innerHTML=`<span style="color:#3a5a6a">No selection</span>`;
+    document.getElementById("genome-bar").innerHTML="";
+    document.getElementById("traits").innerHTML="";
+    const m=document.getElementById("bp-info");if(m)m.textContent="";
+    return;
+  }
+  document.getElementById("sel-info").innerHTML=
+    (sel.id===parent1Id?`<span style="color:#5ae;font-weight:600">● P1</span> `:
+     sel.id===parent2Id?`<span style="color:#ea5;font-weight:600">● P2</span> `:"")+
+    `<span style="color:#4a6a8a">Gen ${sel.gen||0}</span>`;
+  const bar=document.getElementById("genome-bar");bar.innerHTML="";
+  sel.genome.forEach((b,i)=>{
+    const d=document.createElement("div");d.className="bp";d.dataset.idx=i;
+    d.style.setProperty("--bp-color",BCOL[b]);
+    d.innerHTML=`<span class="idx">${i}</span><span class="base base-${b}">${b}</span><span class="comp base-${COMP[b]}">${COMP[b]}</span>`;
+    d.style.cursor="pointer";
+    d.addEventListener("click",()=>toggleBP(sel.id,i));
+    bar.appendChild(d);
+  });
+  const td=document.getElementById("traits");td.innerHTML="";
+  const vals=tvs(sel.traits);
+  for(const[cat,label]of[["lume","◆ LUME"],["move","⟡ MOVE"],["lio","≈ LIO"]]){
+    const col=document.createElement("div");col.className="tcol "+cat;
+    col.innerHTML=`<h4>${label}</h4>`;
+    for(const[name,inf]of Object.entries(TRAITS)){
+      if(inf.cat!==cat)continue;
+      const row=document.createElement("div");row.className="trow"+(activeTrait===name?" active":"");
+      row.innerHTML=`<span class="tn">${name}</span><span class="tv">${inf.fmt(vals[name])}</span>`;
+      row.addEventListener("click",e=>{e.stopPropagation();toggleTrait(name)});
+      row.addEventListener("mouseenter",()=>{if(window.innerWidth>=700)hlBP(name)});
+      row.addEventListener("mouseleave",()=>{if(window.innerWidth>=700)clBP()});
+      col.appendChild(row);
+    }
+    td.appendChild(col);
+  }
+  let mapDiv=document.getElementById("bp-map");
+  if(!mapDiv){mapDiv=document.createElement("div");mapDiv.id="bp-map"}
+  mapDiv.innerHTML=`<div class="ml">BASE PAIR MAP</div><span id="bp-info">${activeTrait?'':'Tap a trait'}</span>`;
+  td.appendChild(mapDiv);
+  if(activeTrait)hlBP(activeTrait);
+}
+function toggleTrait(name){
+  activeTrait=activeTrait===name?null:name;
+  if(activeTrait)hlBP(activeTrait);else clBP();
+  document.querySelectorAll(".trow").forEach(r=>r.classList.remove("active"));
+  if(activeTrait)document.querySelectorAll(".trow").forEach(r=>{if(r.querySelector(".tn").textContent===activeTrait)r.classList.add("active")});
+}
+function hlBP(name){
+  const set=new Set(TRAITS[name].bp);
+  document.querySelectorAll("#genome-bar .bp").forEach(el=>{const i=parseInt(el.dataset.idx);if(set.has(i)){el.classList.add("lit");el.classList.remove("dim")}else{el.classList.add("dim");el.classList.remove("lit")}});
+  const m=document.getElementById("bp-info");
+  if(m)m.innerHTML=`<span style="color:#8ab">${name}</span> → BP <span style="font-weight:600">[${TRAITS[name].bp.join(", ")}]</span>`;
+}
+function clBP(){
+  document.querySelectorAll("#genome-bar .bp").forEach(el=>{el.classList.remove("lit","dim")});
+  const m=document.getElementById("bp-info");if(m)m.textContent="Tap a trait";
+  activeTrait=null;document.querySelectorAll(".trow").forEach(r=>r.classList.remove("active"));
+}
+window.toggleDrawer=function(){drawerOpen=!drawerOpen;document.getElementById("drawer").classList.toggle("open",drawerOpen)};
+window.spawn=function(){const yRange=H*0.75;const c=createCreature(W/2-60+Math.random()*120,H*0.15+Math.random()*yRange*0.6);creatures.push(c);parent1Id=c.id;parent2Id=null;viewId=c.id;updUI()};
+window.breed=function(){
+  const p1=creatures.find(c=>c.id===parent1Id),p2=creatures.find(c=>c.id===parent2Id);
+  if(!p1||!p2)return;generation++;
+  const[g1]=crossover(p1.genome,p2.genome);
+  const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
+  const cx=Math.max(60,Math.min(W-60,mx-20+Math.random()*40));
+  const cy=Math.max(60,Math.min(H*0.82,my-20+Math.random()*40));
+  const child=createCreature(cx,cy,g1);
+  child.gen=generation;
+  creatures.push(child);parent1Id=null;parent2Id=null;viewId=child.id;updUI();
+};
+window.clearAll=function(){creatures=[];parent1Id=parent2Id=viewId=null;generation=0;updUI()};
+window.sell=function(){
+  if(!parent1Id)return;
+  creatures=creatures.filter(c=>c.id!==parent1Id);
+  parent1Id=parent2Id=viewId=null;
+  updUI();
+};
+function toggleBP(cid,idx){
+  const c=creatures.find(c=>c.id===cid);
+  if(!c)return;
+  // Cycle base: A→T→C→G→A
+  const order=["A","T","C","G"];
+  const cur=order.indexOf(c.genome[idx]);
+  c.genome[idx]=order[(cur+1)%4];
+  // Rebuild traits, hull, and trails from new genome
+  rebuildCreature(c);
+  updUI();
+}
+function rebuildCreature(c){
+  const t=decode(c.genome);
+  c.traits=t;
+  c.staticHull=buildStaticHull(t,c.genome);
+  // Rebuild trails with new params, keeping creature position
+  const nT=t.trails;
+  const nProf=c.staticHull.length;
+  const fullHull=buildLumeShape(t,c.staticHull,0);
+  const hN=fullHull.length;
+  const botIdx=nProf-1;
+  const botPt=fullHull[botIdx];
+  const rightArc=[{x:botPt.x,y:botPt.y,d:0,hi:botIdx}];
+  let rDist=0;
+  for(let k=botIdx-1;k>=1;k--){
+    const prev=rightArc[rightArc.length-1];
+    const nd=fullHull[k];
+    rDist+=Math.hypot(nd.x-prev.x,nd.y-prev.y);
+    if(nd.y<botPt.y-Math.abs(botPt.y)*0.8-t.maxReach*0.3)break;
+    rightArc.push({x:nd.x,y:nd.y,d:rDist,hi:k});
+  }
+  const leftArc=[{x:botPt.x,y:botPt.y,d:0,hi:botIdx}];
+  let lDist=0;
+  for(let k=botIdx+1;k<hN;k++){
+    const prev=leftArc[leftArc.length-1];
+    const nd=fullHull[k];
+    lDist+=Math.hypot(nd.x-prev.x,nd.y-prev.y);
+    if(nd.y<botPt.y-Math.abs(botPt.y)*0.8-t.maxReach*0.3)break;
+    leftArc.push({x:nd.x,y:nd.y,d:lDist,hi:k});
+  }
+  const arcLen=Math.min(rDist,lDist)||1;
+  function interpArc(arc,d){
+    for(let k=1;k<arc.length;k++){
+      if(arc[k].d>=d){
+        const f=(d-arc[k-1].d)/(arc[k].d-arc[k-1].d||1);
+        return{x:arc[k-1].x+(arc[k].x-arc[k-1].x)*f,y:arc[k-1].y+(arc[k].y-arc[k-1].y)*f,hi:arc[k].hi,ht:f};
+      }
+    }
+    const last=arc[arc.length-1];return{x:last.x,y:last.y,hi:last.hi,ht:1};
+  }
+  function findHullEdge(px,py){
+    let best=Infinity,bhi=0,bht=0;
+    for(let k=0;k<hN;k++){
+      const a2=fullHull[k],b2=fullHull[(k+1)%hN];
+      const ex=b2.x-a2.x,ey=b2.y-a2.y,el2=ex*ex+ey*ey||1;
+      const tt=Math.max(0,Math.min(1,(((px-a2.x)*ex+(py-a2.y)*ey)/el2)));
+      const cx=a2.x+ex*tt,cy=a2.y+ey*tt;
+      const d2=(px-cx)**2+(py-cy)**2;
+      if(d2<best){best=d2;bhi=k;bht=tt}
+    }
+    return{hi:bhi,ht:bht};
+  }
+  const attachPts=[];
+  if(nT%2===1){attachPts.push({lx:botPt.x,ly:botPt.y,...findHullEdge(botPt.x,botPt.y)})}
+  const nPairs=Math.floor(nT/2);
+  for(let p=0;p<nPairs;p++){
+    const frac=(p+1)/(nPairs+0.5);
+    const d=frac*arcLen;
+    const rp=interpArc(rightArc,d),lp=interpArc(leftArc,d);
+    attachPts.push({lx:rp.x,ly:rp.y,...findHullEdge(rp.x,rp.y)});
+    attachPts.push({lx:lp.x,ly:lp.y,...findHullEdge(lp.x,lp.y)});
+  }
+  const trails=[];
+  for(let i=0;i<nT;i++){
+    const ap=attachPts[i];
+    const tp=trailParams(t,c.genome,i,nT);
+    const pts=[];
+    for(let j=0;j<tp.nodes;j++){
+      pts.push(vpt(c.x+ap.lx,c.y+ap.ly+j*tp.segLen));
+    }
+    trails.push({lx:ap.lx,ly:ap.ly,hullIdx:ap.hi,hullT:ap.ht,segLen:tp.segLen,trailGroup:i,points:pts});
+  }
+  c.trails=trails;
+}
+
+function cPos(e){const r=canvas.getBoundingClientRect();if(e.touches)return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};return{x:e.clientX-r.left,y:e.clientY-r.top}}
+canvas.addEventListener("mousedown",e=>{startDrag(cPos(e).x,cPos(e).y)});
+canvas.addEventListener("mousemove",e=>{if(dragId)moveDrag(cPos(e).x,cPos(e).y)});
+canvas.addEventListener("mouseup",e=>{endDrag(cPos(e).x,cPos(e).y)});
+canvas.addEventListener("mouseleave",()=>{if(dragId){canvas.style.cursor="crosshair";dragId=null}});
+let touchPos=null;
+canvas.addEventListener("touchstart",e=>{e.preventDefault();touchPos=cPos(e);startDrag(touchPos.x,touchPos.y)},{passive:false});
+canvas.addEventListener("touchmove",e=>{e.preventDefault();if(dragId){touchPos=cPos(e);moveDrag(touchPos.x,touchPos.y)}},{passive:false});
+canvas.addEventListener("touchend",e=>{e.preventDefault();if(touchPos)endDrag(touchPos.x,touchPos.y);touchPos=null},{passive:false});
+
+let lastTime=performance.now();
+function frame(now){
+  const dt=Math.min((now-lastTime)/1000,.05);lastTime=now;
+  ctx.save();
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,"#040a14");grad.addColorStop(.4,"#081828");grad.addColorStop(1,"#061020");
+  ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+  const vg=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.2,W/2,H/2,Math.max(W,H)*.72);
+  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,0.45)");
+  ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+  const tm=Date.now()*.0003;ctx.globalAlpha=.018;
+  for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(W*.3+Math.sin(tm+i*1.3)*W*.3,H*.3+Math.cos(tm*.7+i*.9)*H*.3,60+Math.sin(tm+i)*30,0,Math.PI*2);ctx.fillStyle=`hsla(${190+i*15},50%,70%,1)`;ctx.fill()}
+  ctx.globalAlpha=1;drawSubstrate(now);drawP();
+  // Update all creatures
+  for(const c of creatures) updateCreature(c,dt);
+  // Soft body collisions — multiple iterations for stability
+  for(let iter=0;iter<3;iter++){
+    for(let i=0;i<creatures.length;i++){
+      for(let j=i+1;j<creatures.length;j++){
+        softCollide(creatures[i],creatures[j]);
+      }
+    }
+  }
+  // Re-clamp after collisions
+  for(const c of creatures){
+    if(c.id===dragId) continue;
+    const pad=15+c.traits.maxReach*0.5;
+    const bpad=H*0.13+c.traits.maxReach*0.5;
+    c.x=Math.max(pad,Math.min(W-pad,c.x));
+    c.y=Math.max(pad,Math.min(H-bpad,c.y));
+  }
+  // Draw all creatures
+  for(const c of creatures) drawCreature(c,getSelType(c));
+  ctx.restore();requestAnimationFrame(frame);
+}
+window.addEventListener("resize",()=>{resize();initP();initSubstrate()});
+resize();initP();initSubstrate();
+const first=createCreature(W/2,H*0.4);creatures.push(first);parent1Id=first.id;viewId=first.id;updUI();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
