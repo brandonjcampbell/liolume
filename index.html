@@ -27,6 +27,20 @@
   .btn-sell.show{display:inline-block}
   .btn-grow{background:rgba(80,240,140,0.2);border:1px solid rgba(80,240,140,0.4);color:#6e8;font-size:10px;font-weight:600}
   .btn-codex{background:rgba(240,200,80,0.15);border:1px solid rgba(240,200,80,0.3);color:#ec8;font-size:10px}
+  .btn-shop{background:rgba(100,220,180,0.15);border:1px solid rgba(100,220,180,0.3);color:#6db;font-size:10px}
+  #shop-overlay{position:fixed;inset:0;background:rgba(4,10,20,0.95);z-index:1000;display:none;flex-direction:column;backdrop-filter:blur(8px)}
+  #shop-overlay.open{display:flex}
+  #shop-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(100,180,160,0.15);flex-shrink:0}
+  #shop-header h2{font-size:14px;color:#6db;font-weight:600;letter-spacing:1px;margin:0}
+  #shop-body{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:4px;-webkit-overflow-scrolling:touch}
+  .shop-card{background:rgba(15,28,45,0.6);border:1px solid rgba(80,180,160,0.15);border-radius:8px;padding:10px;cursor:grab;user-select:none;-webkit-user-select:none;transition:border-color .2s,transform .1s}
+  .shop-card:active{cursor:grabbing;transform:scale(0.97)}
+  .shop-card.unafford{opacity:0.35;cursor:default}
+  .shop-card .sc-icon{font-size:28px;text-align:center;margin-bottom:4px;line-height:1.2}
+  .shop-card .sc-name{font-size:10px;color:#acd;font-weight:600;text-align:center}
+  .shop-card .sc-desc{font-size:7px;color:#5a7a8a;text-align:center;margin:2px 0 4px}
+  .shop-card .sc-cost{font-size:9px;color:#6db;text-align:center;font-weight:600}
+  #shop-drag-ghost{position:fixed;z-index:1100;pointer-events:none;font-size:36px;transform:translate(-50%,-50%);filter:drop-shadow(0 0 8px rgba(100,220,180,0.5));display:none;transition:none}
   #status-bar{display:none;flex-shrink:0;padding:5px 12px;background:rgba(8,16,32,0.85);border-bottom:1px solid rgba(100,140,180,0.1);font-size:9px;color:#5a7a9a;text-align:center;letter-spacing:.5px;gap:8px;justify-content:center;align-items:center}
   #status-bar.show{display:flex}
   .status-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px}
@@ -63,7 +77,7 @@
   #codex-overlay.open{display:flex}
   #codex-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(100,140,180,0.15);flex-shrink:0}
   #codex-header h2{font-size:14px;color:#ec8;font-weight:600;letter-spacing:1px;margin:0}
-  #codex-header .close-btn{background:none;border:1px solid rgba(240,100,100,0.3);color:#e88;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px}
+  #codex-header .close-btn, #shop-header .close-btn{background:none;border:1px solid rgba(240,100,100,0.3);color:#e88;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px}
   #codex-body{flex:1;overflow-y:auto;padding:12px 16px;-webkit-overflow-scrolling:touch}
   .codex-empty{color:#4a6a8a;text-align:center;margin-top:40px;font-size:11px}
   .codex-card{background:rgba(15,28,45,0.6);border:1px solid rgba(80,130,180,0.15);border-radius:8px;padding:10px 12px;margin-bottom:8px}
@@ -91,7 +105,7 @@
     #tank-wrap{flex:1 1 auto;position:relative;min-width:0}
     .trow{font-size:9px}.trait-grid{gap:8px 12px}
   }
-  @media(max-width:699px){#main{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;position:relative}}
+  @media(max-width:699px){#main{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;position:relative}.trait-grid{grid-template-columns:1fr 1fr 1fr!important}}
 </style>
 </head>
 <body>
@@ -104,6 +118,7 @@
     <button class="btn btn-grow" id="grow-btn" onclick="startGrowZone()">⌘ GROW (◯10)</button>
     <button class="btn btn-codex" id="codex-btn" onclick="toggleCodex()">📖 <span id="codex-count">0</span></button>
     <button class="btn" id="mute-btn" onclick="toggleMute()" style="background:rgba(140,120,200,0.15);border:1px solid rgba(140,120,200,0.3);color:#a8b">🔊</button>
+    <button class="btn btn-shop" id="shop-btn" onclick="toggleShop()">🏪 SHOP</button>
     <button class="btn btn-clear" onclick="clearAll()">CLEAR</button>
   </div>
 </div>
@@ -134,6 +149,14 @@
   </div>
   <div id="codex-body"></div>
 </div>
+<div id="shop-overlay">
+  <div id="shop-header">
+    <h2>🏪 SHOP <span id="shop-balance" style="font-weight:400;font-size:10px;color:#6db"></span></h2>
+    <div><span style="font-size:8px;color:#5a7a8a;margin-right:10px">Drag items into the tank</span><button class="close-btn" onclick="toggleShop()" style="border-color:rgba(100,220,180,0.3);color:#6db">✕ CLOSE</button></div>
+  </div>
+  <div id="shop-body"></div>
+</div>
+<div id="shop-drag-ghost"></div>
 <script>
 const BASES=["A","T","C","G"],COMP={"A":"T","T":"A","C":"G","G":"C"};
 const BVAL={"A":0,"T":1,"C":2,"G":3};
@@ -1444,11 +1467,6 @@ function drawLume(c,selType){
   }
 
   if(selType){
-    const col=selType===1?"rgba(80,170,240,0.55)":selType===2?"rgba(240,160,60,0.55)":"rgba(160,200,160,0.35)";
-    ctx.strokeStyle=col;ctx.lineWidth=selType===3?1:2;ctx.setLineDash([5,5]);
-    ctx.beginPath();ctx.arc(0,0,t.maxReach+12,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
-    ctx.beginPath();ctx.arc(0,0,t.maxReach+12,0,Math.PI*2);
-    ctx.fillStyle=selType===1?"rgba(80,170,240,0.08)":selType===2?"rgba(240,160,60,0.08)":"rgba(160,200,160,0.04)";ctx.fill();
     ctx.font="bold 10px 'JetBrains Mono',monospace";ctx.textAlign="center";
     ctx.fillStyle=selType===1?"#5ae":selType===2?"#ea5":"#8a9";
     ctx.fillText(selType===1?"P1":selType===2?"P2":"👁",0,-t.maxReach-18);
@@ -1501,93 +1519,107 @@ function voxCall(c){
 
   const t=c.traits;
   const now=audioCtx.currentTime;
-  const dur=t.voxDur;
-  const pitch=t.voxPitch;
-  const glide=t.voxGlide;
+
+  // Random modulation per call
+  const rPitch=(Math.random()-0.5)*t.voxPitch*0.08; // ±4% pitch drift
+  const rDur=t.voxDur*(0.8+Math.random()*0.4); // ±20% duration
+  const rGlide=t.voxGlide*(0.6+Math.random()*0.8); // variable glide
+  const rVol=0.7+Math.random()*0.6; // 0.7-1.3 volume multiplier
+
+  const pitch=t.voxPitch+rPitch;
+  const dur=rDur;
+  const glide=rGlide;
   const timbre=t.voxTimbre;
   const reverb=t.voxReverb;
   const harmonics=t.voxHarmonics;
+
+  // Size-scaled volume: tiny=0.2, small=0.4, medium=0.7, large=0.9, massive=1.0
+  const sizeVol=Math.min(1.0,0.15+(t.maxReach-20)/60*0.85);
+  const vol=sizeVol*rVol;
 
   // Pan based on creature x position
   const pan=audioCtx.createStereoPanner?audioCtx.createStereoPanner():null;
   if(pan)pan.pan.value=Math.max(-1,Math.min(1,(c.x/W)*2-1));
 
-  // Output chain: osc → filter → gain → pan → reverb delay → master
   const out=audioCtx.createGain();
   out.gain.value=0;
 
   // Gentle reverb via feedback delay
   const delay=audioCtx.createDelay(2.0);
-  delay.delayTime.value=reverb*0.18+0.04; // 0.04-0.36s
+  delay.delayTime.value=reverb*0.18+0.04;
   const fb=audioCtx.createGain();
-  fb.gain.value=Math.min(0.45,reverb*0.25); // feedback
+  fb.gain.value=Math.min(0.45,reverb*0.25);
   const delayFilter=audioCtx.createBiquadFilter();
-  delayFilter.type="lowpass";delayFilter.frequency.value=2000;
+  delayFilter.type="lowpass";delayFilter.frequency.value=1600+Math.random()*800;
   out.connect(delay);delay.connect(delayFilter);delayFilter.connect(fb);fb.connect(delay);
   delay.connect(pan||voxMaster);
   out.connect(pan||voxMaster);
   if(pan)pan.connect(voxMaster);
 
-  // Bandpass filter for vowel-like resonance
+  // Bandpass filter with random formant shift
   const filt=audioCtx.createBiquadFilter();
   filt.type="bandpass";
-  filt.frequency.value=800+timbre*2200; // 800..3000 Hz formant
-  filt.Q.value=2+timbre*6; // sharper resonance with timbre
+  const formant=(800+timbre*2200)*(0.85+Math.random()*0.3);
+  filt.frequency.value=formant;
+  filt.Q.value=2+timbre*6+Math.random()*2;
 
-  // Main oscillator — sine/triangle blend
+  // Main oscillator
   const osc1=audioCtx.createOscillator();
   osc1.type=timbre<0.3?"sine":timbre<0.6?"triangle":"sine";
   osc1.frequency.setValueAtTime(pitch,now);
   osc1.frequency.linearRampToValueAtTime(pitch+glide,now+dur*0.8);
-  const g1=audioCtx.createGain();
-  g1.gain.value=0.7;
+  // Add vibrato LFO
+  const lfo=audioCtx.createOscillator();lfo.type="sine";
+  lfo.frequency.value=4+Math.random()*4; // 4-8 Hz
+  const lfoGain=audioCtx.createGain();
+  lfoGain.gain.value=pitch*0.01*(0.5+Math.random()); // 0.5-1.5% vibrato
+  lfo.connect(lfoGain);lfoGain.connect(osc1.frequency);
+  lfo.start(now+dur*0.2);lfo.stop(now+dur+1);
+  const g1=audioCtx.createGain();g1.gain.value=0.7;
 
-  // Detuned second oscillator for richness
+  // Detuned chorus
   const osc2=audioCtx.createOscillator();
+  const detune=1.002+Math.random()*0.003;
   osc2.type=timbre<0.5?"sine":"triangle";
-  osc2.frequency.setValueAtTime(pitch*1.003,now); // slight detune
-  osc2.frequency.linearRampToValueAtTime((pitch+glide)*1.003,now+dur*0.8);
-  const g2=audioCtx.createGain();
-  g2.gain.value=0.3;
+  osc2.frequency.setValueAtTime(pitch*detune,now);
+  osc2.frequency.linearRampToValueAtTime((pitch+glide)*detune,now+dur*0.8);
+  const g2=audioCtx.createGain();g2.gain.value=0.25+Math.random()*0.1;
 
-  // Harmonic overtone (octave + fifth)
-  const osc3=audioCtx.createOscillator();
-  osc3.type="sine";
-  const hRatio=timbre<0.4?2:timbre<0.7?3:2.5; // octave, 12th, or octave+fifth
+  // Harmonic overtone
+  const osc3=audioCtx.createOscillator();osc3.type="sine";
+  const hRatio=timbre<0.4?2:timbre<0.7?3:2.5;
   osc3.frequency.setValueAtTime(pitch*hRatio,now);
   osc3.frequency.linearRampToValueAtTime((pitch+glide)*hRatio,now+dur*0.8);
-  const g3=audioCtx.createGain();
-  g3.gain.value=harmonics*0.25;
+  const g3=audioCtx.createGain();g3.gain.value=harmonics*0.25;
 
-  // Sub-harmonic shimmer (one octave below, very quiet)
-  const osc4=audioCtx.createOscillator();
-  osc4.type="sine";
+  // Sub-harmonic
+  const osc4=audioCtx.createOscillator();osc4.type="sine";
   osc4.frequency.setValueAtTime(pitch*0.5,now);
-  const g4=audioCtx.createGain();
-  g4.gain.value=timbre>0.5?0.12:0.06;
+  const g4=audioCtx.createGain();g4.gain.value=timbre>0.5?0.12:0.06;
 
-  // Connect oscillators → filter → output
   osc1.connect(g1);g1.connect(filt);
   osc2.connect(g2);g2.connect(filt);
   osc3.connect(g3);g3.connect(filt);
   osc4.connect(g4);g4.connect(filt);
   filt.connect(out);
 
-  // Envelope: quick attack, sustain, gentle release
-  const atk=0.012+dur*0.05; // 12-32ms attack
+  // Envelope with size-scaled volume
+  const atk=0.012+dur*0.05;
   const rel=dur*0.5+reverb*0.15;
+  const peakVol=0.6*vol;
+  const susVol=0.25*vol;
   out.gain.setValueAtTime(0,now);
-  out.gain.linearRampToValueAtTime(0.6,now+atk);
-  out.gain.setValueAtTime(0.6,now+atk);
-  out.gain.exponentialRampToValueAtTime(0.25,now+dur*0.6);
+  out.gain.linearRampToValueAtTime(peakVol,now+atk);
+  out.gain.setValueAtTime(peakVol,now+atk);
+  out.gain.exponentialRampToValueAtTime(Math.max(0.001,susVol),now+dur*0.6);
   out.gain.exponentialRampToValueAtTime(0.001,now+dur+rel);
 
-  // Filter sweep: opens then closes
-  filt.frequency.setValueAtTime(filt.frequency.value*0.5,now);
-  filt.frequency.linearRampToValueAtTime(filt.frequency.value,now+dur*0.3);
-  filt.frequency.linearRampToValueAtTime(filt.frequency.value*0.3,now+dur+rel);
+  // Filter sweep with random variation
+  const fOpen=formant*(0.4+Math.random()*0.2);
+  filt.frequency.setValueAtTime(fOpen,now);
+  filt.frequency.linearRampToValueAtTime(formant,now+dur*0.3);
+  filt.frequency.linearRampToValueAtTime(formant*0.3,now+dur+rel);
 
-  // Start and stop
   const endTime=now+dur+rel+reverb*0.5+0.1;
   [osc1,osc2,osc3,osc4].forEach(o=>{o.start(now);o.stop(endTime)});
   osc1.onended=()=>{activeVox=Math.max(0,activeVox-1)};
@@ -1865,6 +1897,49 @@ function growZoneMultiplier(cx,cy){
 
 // ── Substrate: rocks, plants, sand bed ──
 let substrate={rocks:[],plants:[],pebbles:[]};
+let decorations=[]; // placed shop items {type, x, y, seed}
+let shopOpen=false, shopDragItem=null, shopDragPos=null;
+
+// Size multipliers and cost scaling
+const DECO_SIZES=[
+  {label:"S",scale:0.6,mult:0.5},
+  {label:"M",scale:1.0,mult:1},
+  {label:"L",scale:1.5,mult:2},
+  {label:"XL",scale:2.2,mult:4},
+  {label:"XXL",scale:3.2,mult:8},
+];
+const DECO_BASES=[
+  {id:"kelp",name:"Giant Kelp",baseCost:15,desc:"Tall swaying fronds",icon:"🌿"},
+  {id:"rock",name:"Boulder",baseCost:10,desc:"Mossy weathered stone",icon:"🪨"},
+  {id:"coral",name:"Coral Branch",baseCost:20,desc:"Branching deep-sea coral",icon:"🪸"},
+  {id:"shell",name:"Spiral Shell",baseCost:15,desc:"Iridescent nautilus shell",icon:"🐚"},
+  {id:"castle",name:"Castle Ruin",baseCost:30,desc:"Sunken stone tower",icon:"🏰"},
+  {id:"crystal",name:"Crystal",baseCost:25,desc:"Glowing mineral cluster",icon:"💎"},
+  {id:"chest",name:"Treasure Chest",baseCost:35,desc:"Ancient gold-trimmed chest",icon:"📦"},
+  {id:"anemone",name:"Anemone",baseCost:15,desc:"Waving tentacle flower",icon:"🌺"},
+  {id:"arch",name:"Stone Arch",baseCost:30,desc:"Weathered gateway",icon:"⛩️"},
+  {id:"lantern",name:"Depth Lantern",baseCost:20,desc:"Soft bioluminescent glow",icon:"🏮"},
+];
+// Build SHOP_ITEMS from bases × sizes + interactive
+const SHOP_ITEMS=[];
+for(const base of DECO_BASES){
+  for(const sz of DECO_SIZES){
+    SHOP_ITEMS.push({
+      id:base.id,name:base.name+" ("+sz.label+")",
+      cost:Math.round(base.baseCost*sz.mult),
+      desc:base.desc,icon:base.icon,cat:"decor",
+      scale:sz.scale,sizeLabel:sz.label
+    });
+  }
+}
+// Interactive items (no size variants)
+SHOP_ITEMS.push(
+  {id:"orb",name:"Glow Orb",cost:25,desc:"Floats freely — LioLumes bump it around",icon:"🔮",cat:"interactive",scale:1},
+  {id:"chime",name:"Wind Chime",cost:30,desc:"Rings when a LioLume swims near",icon:"🎐",cat:"interactive",scale:1},
+  {id:"bell",name:"Deep Bell",cost:35,desc:"Resonant gong struck by passing LioLumes",icon:"🔔",cat:"interactive",scale:1},
+  {id:"mirror",name:"Echo Pool",cost:40,desc:"Reflects light — LioLumes vocalize when close",icon:"🪞",cat:"interactive",scale:1},
+  {id:"drum",name:"Coral Drum",cost:20,desc:"Thumps softly when touched",icon:"🥁",cat:"interactive",scale:1},
+);
 function seededRand(s){return function(){s=(s*9301+49297)%233280;return s/233280}}
 
 function initSubstrate(){
@@ -2071,6 +2146,606 @@ function drawSubstrate(time){
       }
     }
   }
+}
+
+// ── Decorations ──
+function drawDecorations(time){
+  const t=time*0.001;
+  // Sort by y for depth ordering (further back draws first)
+  const sorted=[...decorations].sort((a,b)=>a.y-b.y);
+  for(const d of sorted){
+    const rng=seededRand(d.seed);
+    const sc=d.scale||1;
+    ctx.save();
+    ctx.translate(d.x,d.y);
+    // Scale decor items (interactive draw at natural size)
+    if(sc!==1&&d.type!=="orb")ctx.scale(sc,sc);
+    switch(d.type){
+      case "kelp": drawDecoKelp(t,rng);break;
+      case "rock": drawDecoRock(rng);break;
+      case "coral": drawDecoCoral(t,rng);break;
+      case "shell": drawDecoShell(rng);break;
+      case "castle": drawDecoCastle(rng);break;
+      case "crystal": drawDecoCrystal(t,rng);break;
+      case "chest": drawDecoChest(rng);break;
+      case "anemone": drawDecoAnemone(t,rng);break;
+      case "arch": drawDecoArch(rng);break;
+      case "lantern": drawDecoLantern(t,rng);break;
+      case "orb": drawDecoOrb(d,t);break;
+      case "chime": drawDecoChime(d,t);break;
+      case "bell": drawDecoBell(d,t);break;
+      case "mirror": drawDecoMirror(d,t);break;
+      case "drum": drawDecoDrum(d,t);break;
+    }
+    ctx.restore();
+  }
+}
+
+// Interactive decoration state
+function initInteractive(d){
+  if(d.inited)return;d.inited=true;
+  if(d.type==="orb"){d.vx=d.vx||0;d.vy=d.vy||0;d.glow=d.glow||0;d.baseY=d.baseY||d.y;d.bobPhase=d.bobPhase||Math.random()*Math.PI*2;d.lastRing=d.lastRing||0}
+  if(d.type==="chime"||d.type==="bell"||d.type==="drum"){d.ring=0;d.lastRing=0}
+  if(d.type==="mirror"){d.glow=0;d.lastTrigger=0}
+}
+
+function updateInteractiveDecorations(dt){
+  const now=Date.now();
+  for(const d of decorations){
+    initInteractive(d);
+    if(d.type==="orb"){
+      // Bob gently
+      d.bobPhase+=dt*1.2;
+      d.y=d.baseY+Math.sin(d.bobPhase)*8;
+      // Damped velocity
+      d.x+=d.vx*dt*60;d.y+=d.vy*dt*60;
+      d.vx*=0.97;d.vy*=0.97;
+      d.glow*=0.95;
+      // Walls
+      if(d.x<20){d.x=20;d.vx=Math.abs(d.vx)*0.5}
+      if(d.x>W-20){d.x=W-20;d.vx=-Math.abs(d.vx)*0.5}
+      if(d.y<30){d.y=30;d.vy=Math.abs(d.vy)*0.5}
+      if(d.y>H*0.85){d.y=H*0.85;d.vy=-Math.abs(d.vy)*0.5}
+      d.baseY+=(d.y-d.baseY)*0.01;
+      // Check creature proximity
+      for(const c of creatures){
+        const dx=c.x-d.x,dy=c.y-d.y;
+        const dist=Math.hypot(dx,dy);
+        const hitR=c.traits.maxReach*0.8+12;
+        if(dist<hitR){
+          const push=0.8*(1-dist/hitR);
+          d.vx-=dx/dist*push;d.vy-=dy/dist*push;
+          d.glow=1;
+          // Orb chime sound
+          if(now-d.lastRing>800){
+            d.lastRing=now;
+            playDecoSound("orb",d);
+          }
+        }
+      }
+    }
+    if(d.type==="chime"||d.type==="bell"||d.type==="drum"){
+      d.ring*=0.92;
+      for(const c of creatures){
+        const dist=Math.hypot(c.x-d.x,c.y-d.y);
+        const hitR=d.type==="bell"?45:35;
+        if(dist<hitR&&now-d.lastRing>1200){
+          d.ring=1;d.lastRing=now;
+          playDecoSound(d.type,d);
+        }
+      }
+    }
+    if(d.type==="mirror"){
+      d.glow*=0.96;
+      for(const c of creatures){
+        const dist=Math.hypot(c.x-d.x,c.y-d.y);
+        if(dist<40&&now-d.lastTrigger>2500){
+          d.glow=1;d.lastTrigger=now;
+          voxCall(c); // triggers creature to vocalize
+        }
+      }
+    }
+  }
+}
+
+function playDecoSound(type,d){
+  if(!voxEnabled||!audioCtx)return;
+  if(audioCtx.state==="suspended")audioCtx.resume();
+  const now=audioCtx.currentTime;
+  const rng=seededRand(d.seed+Date.now()%1000);
+
+  if(type==="orb"){
+    // Sparkly ping
+    const osc=audioCtx.createOscillator();osc.type="sine";
+    const freq=600+rng()*800;
+    osc.frequency.setValueAtTime(freq,now);
+    osc.frequency.exponentialRampToValueAtTime(freq*1.5,now+0.15);
+    const g=audioCtx.createGain();g.gain.setValueAtTime(0.08,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.4);
+    osc.connect(g);g.connect(voxMaster);osc.start(now);osc.stop(now+0.5);
+  }
+  if(type==="chime"){
+    // Metallic shimmer — two detuned tones
+    const base=800+rng()*600;
+    for(let i=0;i<2;i++){
+      const osc=audioCtx.createOscillator();osc.type="sine";
+      osc.frequency.value=base*(i===0?1:1.498);
+      const g=audioCtx.createGain();g.gain.setValueAtTime(0.06,now+i*0.03);
+      g.gain.exponentialRampToValueAtTime(0.001,now+0.8+rng()*0.4);
+      const filt=audioCtx.createBiquadFilter();filt.type="bandpass";
+      filt.frequency.value=base*1.5;filt.Q.value=8;
+      osc.connect(filt);filt.connect(g);g.connect(voxMaster);
+      osc.start(now+i*0.03);osc.stop(now+1.5);
+    }
+  }
+  if(type==="bell"){
+    // Deep resonant strike
+    const base=120+rng()*80;
+    const osc=audioCtx.createOscillator();osc.type="triangle";
+    osc.frequency.setValueAtTime(base,now);
+    osc.frequency.exponentialRampToValueAtTime(base*0.95,now+1.5);
+    const osc2=audioCtx.createOscillator();osc2.type="sine";
+    osc2.frequency.value=base*2.76; // inharmonic partial
+    const g=audioCtx.createGain();g.gain.setValueAtTime(0.12,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+2.0);
+    const g2=audioCtx.createGain();g2.gain.setValueAtTime(0.04,now);
+    g2.gain.exponentialRampToValueAtTime(0.001,now+1.2);
+    osc.connect(g);g.connect(voxMaster);osc2.connect(g2);g2.connect(voxMaster);
+    osc.start(now);osc.stop(now+2.5);osc2.start(now);osc2.stop(now+2.0);
+  }
+  if(type==="drum"){
+    // Soft thump — pitched noise burst
+    const osc=audioCtx.createOscillator();osc.type="sine";
+    osc.frequency.setValueAtTime(180+rng()*60,now);
+    osc.frequency.exponentialRampToValueAtTime(40,now+0.12);
+    const g=audioCtx.createGain();g.gain.setValueAtTime(0.15,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.25);
+    osc.connect(g);g.connect(voxMaster);osc.start(now);osc.stop(now+0.3);
+  }
+}
+
+function drawDecoOrb(d,t){
+  initInteractive(d);
+  const pulse=0.5+Math.sin(t*2+d.seed)*0.3;
+  const hue=180+(d.seed%180);
+  const gR=14+pulse*4+d.glow*8;
+  // Glow
+  const gg=ctx.createRadialGradient(0,0,2,0,0,gR);
+  gg.addColorStop(0,`hsla(${hue},70%,70%,${0.25+d.glow*0.3+pulse*0.1})`);
+  gg.addColorStop(0.5,`hsla(${hue},50%,50%,${0.1+d.glow*0.15})`);
+  gg.addColorStop(1,"transparent");
+  ctx.beginPath();ctx.arc(0,0,gR,0,Math.PI*2);ctx.fillStyle=gg;ctx.fill();
+  // Orb body
+  ctx.beginPath();ctx.arc(0,0,7+pulse*2,0,Math.PI*2);
+  const og=ctx.createRadialGradient(-2,-2,1,0,0,8);
+  og.addColorStop(0,`hsla(${hue},60%,80%,0.7)`);
+  og.addColorStop(1,`hsla(${hue},50%,45%,0.5)`);
+  ctx.fillStyle=og;ctx.fill();
+  // Specular
+  ctx.beginPath();ctx.arc(-2,-3,2.5,0,Math.PI*2);
+  ctx.fillStyle="rgba(255,255,255,0.25)";ctx.fill();
+}
+
+function drawDecoChime(d,t){
+  initInteractive(d);
+  const swing=Math.sin(t*1.5+d.seed)*0.15+d.ring*Math.sin(t*12)*0.2;
+  // Top bar
+  ctx.fillStyle="rgba(120,140,160,0.4)";ctx.fillRect(-12,-2,24,3);
+  // Hanging chimes
+  for(let i=0;i<5;i++){
+    const cx=-8+i*4;
+    const len=14+i*3+Math.sin(d.seed+i)*4;
+    const a=swing*(1+i*0.2);
+    ctx.save();ctx.translate(cx,1);ctx.rotate(a);
+    // String
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,len);
+    ctx.strokeStyle=`rgba(140,160,180,${0.3+d.ring*0.3})`;ctx.lineWidth=0.5;ctx.stroke();
+    // Tube
+    ctx.fillStyle=`hsla(${200+i*15},30%,${50+d.ring*20}%,${0.4+d.ring*0.3})`;
+    ctx.fillRect(-1.5,len-6,3,6);
+    ctx.restore();
+  }
+  // Central striker
+  ctx.beginPath();ctx.arc(0,22,2,0,Math.PI*2);
+  ctx.fillStyle=`rgba(200,180,140,${0.3+d.ring*0.4})`;ctx.fill();
+}
+
+function drawDecoBell(d,t){
+  initInteractive(d);
+  const shake=d.ring*Math.sin(t*15)*2;
+  ctx.save();ctx.translate(shake,0);
+  // Dome
+  ctx.beginPath();ctx.moveTo(-14,0);
+  ctx.quadraticCurveTo(-16,-20,-8,-32);
+  ctx.quadraticCurveTo(0,-38,8,-32);
+  ctx.quadraticCurveTo(16,-20,14,0);ctx.closePath();
+  const bg=ctx.createLinearGradient(0,-35,0,0);
+  bg.addColorStop(0,`hsla(40,40%,${35+d.ring*20}%,0.6)`);
+  bg.addColorStop(1,`hsla(35,30%,25%,0.5)`);
+  ctx.fillStyle=bg;ctx.fill();
+  ctx.strokeStyle=`hsla(40,30%,${40+d.ring*15}%,0.4)`;ctx.lineWidth=1;ctx.stroke();
+  // Clapper
+  ctx.beginPath();ctx.arc(0,-4,3,0,Math.PI*2);
+  ctx.fillStyle="rgba(160,140,100,0.5)";ctx.fill();
+  // Rim highlight
+  ctx.beginPath();ctx.moveTo(-14,0);ctx.lineTo(14,0);
+  ctx.strokeStyle=`hsla(45,50%,55%,${0.2+d.ring*0.3})`;ctx.lineWidth=1.5;ctx.stroke();
+  // Sound rings
+  if(d.ring>0.1){
+    ctx.globalAlpha=d.ring*0.3;
+    for(let i=1;i<=3;i++){
+      ctx.beginPath();ctx.arc(0,-15,18+i*8,0,Math.PI*2);
+      ctx.strokeStyle=`hsla(45,40%,60%,${d.ring*0.2/i})`;ctx.lineWidth=0.8;ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+  }
+  ctx.restore();
+}
+
+function drawDecoMirror(d,t){
+  initInteractive(d);
+  const pulse=d.glow;
+  // Oval pool
+  ctx.beginPath();ctx.ellipse(0,-3,18,10,0,0,Math.PI*2);
+  const mg=ctx.createRadialGradient(0,-3,2,0,-3,18);
+  mg.addColorStop(0,`hsla(200,60%,65%,${0.15+pulse*0.25})`);
+  mg.addColorStop(0.7,`hsla(220,40%,35%,${0.1+pulse*0.15})`);
+  mg.addColorStop(1,"rgba(10,20,30,0.3)");
+  ctx.fillStyle=mg;ctx.fill();
+  // Stone rim
+  ctx.strokeStyle="rgba(100,110,120,0.35)";ctx.lineWidth=2.5;ctx.stroke();
+  // Reflection shimmer
+  if(pulse>0.05){
+    ctx.globalAlpha=pulse*0.6;
+    const rShift=Math.sin(t*3)*3;
+    ctx.beginPath();ctx.ellipse(rShift,-3,8,4,0.2,0,Math.PI*2);
+    ctx.fillStyle=`hsla(180,70%,80%,0.3)`;ctx.fill();
+    ctx.globalAlpha=1;
+  }
+  // Ripple rings
+  const age=(Date.now()-d.lastTrigger)/1000;
+  if(age<2){
+    ctx.globalAlpha=(1-age/2)*0.4;
+    for(let i=0;i<3;i++){
+      const r=5+age*12+i*6;
+      ctx.beginPath();ctx.ellipse(0,-3,r,r*0.55,0,0,Math.PI*2);
+      ctx.strokeStyle="rgba(180,220,255,0.3)";ctx.lineWidth=0.6;ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+  }
+}
+
+function drawDecoDrum(d,t){
+  initInteractive(d);
+  const hit=d.ring;
+  const squeeze=1+hit*0.08;
+  ctx.save();ctx.scale(1/squeeze,squeeze);
+  // Drum body
+  ctx.beginPath();ctx.ellipse(0,-5,14,8,0,0,Math.PI*2);
+  ctx.fillStyle=`hsla(15,40%,${22+hit*15}%,0.55)`;ctx.fill();
+  ctx.strokeStyle=`hsla(15,30%,35%,0.4)`;ctx.lineWidth=0.8;ctx.stroke();
+  // Top membrane
+  ctx.beginPath();ctx.ellipse(0,-10,14,5,0,0,Math.PI*2);
+  ctx.fillStyle=`hsla(40,30%,${40+hit*20}%,0.45)`;ctx.fill();
+  ctx.strokeStyle=`hsla(30,25%,45%,0.35)`;ctx.lineWidth=0.6;ctx.stroke();
+  // Side texture
+  for(let i=0;i<3;i++){
+    const y=-2+i*3;
+    ctx.beginPath();ctx.ellipse(0,y,14,8-i*0.5,0,0,Math.PI,false);
+    ctx.strokeStyle=`hsla(20,20%,30%,${0.1+hit*0.1})`;ctx.lineWidth=0.4;ctx.stroke();
+  }
+  ctx.restore();
+  // Impact ring
+  if(hit>0.2){
+    ctx.globalAlpha=hit*0.3;
+    ctx.beginPath();ctx.arc(0,-10,14+hit*8,0,Math.PI*2);
+    ctx.strokeStyle="hsla(40,40%,60%,0.3)";ctx.lineWidth=1;ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+}
+
+function drawDecoKelp(t,rng){
+  const nStalks=3+Math.floor(rng()*3);
+  for(let s=0;s<nStalks;s++){
+    const ox=(rng()-0.5)*20;
+    const h=60+rng()*50;
+    const hue=90+rng()*40;
+    const w=2+rng()*2;
+    const swayA=0.12+rng()*0.15;
+    const swayS=0.3+rng()*0.4;
+    const ph=rng()*Math.PI*2;
+    const sway=Math.sin(t*swayS+ph)*swayA;
+    const nSeg=5+Math.floor(rng()*3);
+    // Stalk
+    ctx.beginPath();ctx.moveTo(ox,0);
+    for(let i=1;i<=nSeg;i++){
+      const f=i/nSeg;
+      const y=-h*f;
+      const x=ox+sway*f*f*h*0.5+(rng()-0.5)*4*f;
+      const cpx=ox+sway*f*f*h*0.3;
+      ctx.quadraticCurveTo(cpx,(y+(-h*(i-1)/nSeg))/2,x,y);
+    }
+    ctx.strokeStyle=`hsla(${hue},35%,22%,0.6)`;ctx.lineWidth=w;ctx.lineCap="round";ctx.stroke();
+    ctx.strokeStyle=`hsla(${hue},40%,30%,0.25)`;ctx.lineWidth=w*0.3;ctx.stroke();
+    // Leaves
+    for(let l=0;l<3;l++){
+      const lf=0.3+rng()*0.5;
+      const ly=-h*lf;
+      const lx=ox+sway*lf*lf*h*0.5;
+      const side=rng()>0.5?1:-1;
+      const len=8+rng()*14;
+      const la=side*(0.3+rng()*0.5)+sway*0.5;
+      ctx.beginPath();ctx.moveTo(lx,ly);
+      ctx.lineTo(lx+Math.cos(la-Math.PI/2)*len,ly+Math.sin(la-Math.PI/2)*len);
+      ctx.strokeStyle=`hsla(${hue+10},40%,26%,0.45)`;ctx.lineWidth=2.5;ctx.stroke();
+    }
+  }
+}
+
+function drawDecoRock(rng){
+  const nR=2+Math.floor(rng()*3);
+  for(let i=0;i<nR;i++){
+    const rx=(rng()-0.5)*30;
+    const ry=-rng()*8;
+    const rr=8+rng()*14;
+    const hue=190+rng()*40;
+    const lit=12+rng()*10;
+    const nV=6+Math.floor(rng()*4);
+    ctx.beginPath();
+    for(let v=0;v<nV;v++){
+      const a=v/nV*Math.PI*2;
+      const r2=rr*(0.7+rng()*0.4);
+      const vx=rx+Math.cos(a)*r2;
+      const vy=ry+Math.sin(a)*r2*0.6;
+      if(v===0)ctx.moveTo(vx,vy);else ctx.lineTo(vx,vy);
+    }
+    ctx.closePath();
+    ctx.fillStyle=`rgba(0,0,0,0.15)`;ctx.fill();
+    ctx.translate(-1.5,-1);
+    ctx.fillStyle=`hsl(${hue},15%,${lit}%)`;ctx.fill();
+    ctx.strokeStyle=`hsl(${hue},12%,${lit+8}%)`;ctx.lineWidth=0.7;ctx.stroke();
+    ctx.translate(1.5,1);
+    // Moss spots
+    if(rng()>0.4){
+      ctx.beginPath();ctx.arc(rx-rr*0.2,ry-rr*0.3,rr*0.25,0,Math.PI*2);
+      ctx.fillStyle=`hsla(120,25%,18%,0.3)`;ctx.fill();
+    }
+  }
+}
+
+function drawDecoCoral(t,rng){
+  const hue=340+rng()*50;
+  const branches=4+Math.floor(rng()*4);
+  function branch(x,y,angle,len,depth,w){
+    if(depth<=0||len<3)return;
+    const sway=Math.sin(t*0.4+x*0.1)*0.05;
+    const ex=x+Math.cos(angle+sway)*len;
+    const ey=y+Math.sin(angle+sway)*len;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(ex,ey);
+    ctx.strokeStyle=`hsla(${hue},45%,${28+depth*6}%,0.7)`;
+    ctx.lineWidth=w;ctx.lineCap="round";ctx.stroke();
+    // Tip bulb
+    if(depth<=1){
+      ctx.beginPath();ctx.arc(ex,ey,w+1,0,Math.PI*2);
+      ctx.fillStyle=`hsla(${hue+20},50%,50%,0.4)`;ctx.fill();
+    }
+    const spread=0.4+rng()*0.5;
+    branch(ex,ey,angle-spread,len*0.65,depth-1,w*0.65);
+    branch(ex,ey,angle+spread,len*0.65,depth-1,w*0.65);
+    if(rng()>0.6)branch(ex,ey,angle+rng()*0.3,len*0.5,depth-1,w*0.5);
+  }
+  for(let i=0;i<branches;i++){
+    const a=-Math.PI/2+(rng()-0.5)*0.8;
+    const ox=(rng()-0.5)*16;
+    branch(ox,0,a,14+rng()*16,3+Math.floor(rng()*2),2.5+rng()*1.5);
+  }
+}
+
+function drawDecoShell(rng){
+  const hue=30+rng()*40;
+  const size=14+rng()*8;
+  const turns=2.5+rng()*1.5;
+  ctx.save();ctx.rotate((rng()-0.5)*0.4);ctx.translate(0,-size*0.3);
+  // Spiral shell
+  ctx.beginPath();
+  for(let i=0;i<turns*60;i++){
+    const a=i*0.1;
+    const r=2+a/(turns*6)*size;
+    const x=Math.cos(a)*r;
+    const y=Math.sin(a)*r*0.65;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle=`hsla(${hue},35%,55%,0.7)`;ctx.lineWidth=2.5;ctx.lineCap="round";ctx.stroke();
+  ctx.strokeStyle=`hsla(${hue-10},45%,72%,0.3)`;ctx.lineWidth=1;ctx.stroke();
+  // Shell body
+  ctx.beginPath();ctx.ellipse(0,0,size*0.55,size*0.35,0,0,Math.PI*2);
+  const sg=ctx.createRadialGradient(0,-3,2,0,0,size*0.5);
+  sg.addColorStop(0,`hsla(${hue},40%,65%,0.5)`);
+  sg.addColorStop(1,`hsla(${hue+20},30%,40%,0.3)`);
+  ctx.fillStyle=sg;ctx.fill();
+  // Iridescent highlight
+  ctx.beginPath();ctx.ellipse(-size*0.1,-size*0.15,size*0.2,size*0.1,0.3,0,Math.PI*2);
+  ctx.fillStyle=`hsla(${hue+120},50%,75%,0.15)`;ctx.fill();
+  ctx.restore();
+}
+
+function drawDecoCastle(rng){
+  const w=22+rng()*10;
+  const h=35+rng()*20;
+  const hue=25+rng()*15;
+  const lit=16+rng()*8;
+  // Shadow
+  ctx.fillStyle="rgba(0,0,0,0.12)";
+  ctx.fillRect(-w/2+2,-h+2,w,h);
+  // Main tower
+  ctx.fillStyle=`hsl(${hue},12%,${lit}%)`;
+  ctx.fillRect(-w/2,-h,w,h);
+  ctx.strokeStyle=`hsl(${hue},10%,${lit+8}%)`;ctx.lineWidth=0.8;
+  ctx.strokeRect(-w/2,-h,w,h);
+  // Crenellations
+  const cw=w/5;
+  for(let i=0;i<5;i+=2){
+    ctx.fillStyle=`hsl(${hue},12%,${lit+2}%)`;
+    ctx.fillRect(-w/2+i*cw,-h-6,cw,6);
+  }
+  // Window arch
+  ctx.beginPath();
+  ctx.arc(0,-h*0.55,3.5,Math.PI,0);
+  ctx.lineTo(3.5,-h*0.35);ctx.lineTo(-3.5,-h*0.35);ctx.closePath();
+  ctx.fillStyle=`hsla(200,40%,15%,0.6)`;ctx.fill();
+  // Window glow
+  ctx.fillStyle=`hsla(45,60%,50%,0.15)`;ctx.fill();
+  // Door
+  ctx.beginPath();ctx.arc(0,0,w*0.18,Math.PI,0);
+  ctx.lineTo(w*0.18,0);ctx.lineTo(-w*0.18,0);ctx.closePath();
+  ctx.fillStyle=`hsl(${hue},15%,${lit-4}%)`;ctx.fill();
+  // Stone lines
+  for(let r=0;r<4;r++){
+    const ry=-h*(0.15+r*0.2);
+    ctx.beginPath();ctx.moveTo(-w/2,ry);ctx.lineTo(w/2,ry);
+    ctx.strokeStyle=`hsla(${hue},8%,${lit+5}%,0.2)`;ctx.lineWidth=0.4;ctx.stroke();
+  }
+}
+
+function drawDecoCrystal(t,rng){
+  const nC=3+Math.floor(rng()*4);
+  for(let i=0;i<nC;i++){
+    const cx=(rng()-0.5)*24;
+    const ch=16+rng()*28;
+    const cw=3+rng()*5;
+    const angle=(rng()-0.5)*0.5;
+    const hue=240+rng()*80;
+    const glow=0.3+Math.sin(t*1.5+i*1.7)*0.15;
+    ctx.save();ctx.translate(cx,0);ctx.rotate(angle);
+    // Crystal body
+    ctx.beginPath();
+    ctx.moveTo(0,-ch);ctx.lineTo(cw/2,-ch*0.15);ctx.lineTo(cw*0.3,0);
+    ctx.lineTo(-cw*0.3,0);ctx.lineTo(-cw/2,-ch*0.15);ctx.closePath();
+    const cg=ctx.createLinearGradient(0,-ch,0,0);
+    cg.addColorStop(0,`hsla(${hue},60%,65%,${0.4+glow})`);
+    cg.addColorStop(1,`hsla(${hue},40%,30%,0.5)`);
+    ctx.fillStyle=cg;ctx.fill();
+    ctx.strokeStyle=`hsla(${hue},50%,75%,${0.3+glow})`;ctx.lineWidth=0.6;ctx.stroke();
+    // Inner highlight
+    ctx.beginPath();ctx.moveTo(-1,-ch*0.8);ctx.lineTo(1,-ch*0.3);
+    ctx.strokeStyle=`hsla(${hue+30},70%,80%,${0.2+glow})`;ctx.lineWidth=1;ctx.stroke();
+    ctx.restore();
+  }
+  // Base glow
+  ctx.beginPath();ctx.ellipse(0,2,18,5,0,0,Math.PI*2);
+  const bg=ctx.createRadialGradient(0,2,1,0,2,18);
+  bg.addColorStop(0,`hsla(${240+rng()*80},50%,60%,0.12)`);
+  bg.addColorStop(1,"transparent");
+  ctx.fillStyle=bg;ctx.fill();
+}
+
+function drawDecoChest(rng){
+  const w=22,h=14;
+  const hue=30+rng()*15;
+  // Shadow
+  ctx.fillStyle="rgba(0,0,0,0.1)";ctx.fillRect(-w/2+2,-h+2,w,h);
+  // Body
+  ctx.fillStyle=`hsl(${hue},35%,18%)`;
+  ctx.fillRect(-w/2,-h,w,h);
+  ctx.strokeStyle=`hsl(${hue},30%,28%)`;ctx.lineWidth=0.8;ctx.strokeRect(-w/2,-h,w,h);
+  // Lid (rounded top)
+  ctx.beginPath();
+  ctx.moveTo(-w/2,-h);ctx.quadraticCurveTo(0,-h-8,w/2,-h);ctx.closePath();
+  ctx.fillStyle=`hsl(${hue},40%,22%)`;ctx.fill();
+  ctx.strokeStyle=`hsl(${hue},30%,30%)`;ctx.lineWidth=0.6;ctx.stroke();
+  // Metal bands
+  for(const bx of[-w*0.3,0,w*0.3]){
+    ctx.fillStyle=`hsla(45,50%,45%,0.35)`;
+    ctx.fillRect(bx-1.5,-h-2,3,h+2);
+  }
+  // Lock
+  ctx.beginPath();ctx.arc(0,-h*0.45,2.5,0,Math.PI*2);
+  ctx.fillStyle=`hsla(45,60%,55%,0.5)`;ctx.fill();
+  ctx.strokeStyle=`hsla(45,50%,40%,0.6)`;ctx.lineWidth=0.6;ctx.stroke();
+  // Gold gleam
+  ctx.beginPath();ctx.arc(-2,-h-3,1.2,0,Math.PI*2);
+  ctx.fillStyle="rgba(255,220,100,0.2)";ctx.fill();
+}
+
+function drawDecoAnemone(t,rng){
+  const nTentacles=12+Math.floor(rng()*10);
+  const hue=300+rng()*60;
+  const baseR=6+rng()*4;
+  // Tentacles
+  for(let i=0;i<nTentacles;i++){
+    const a=-Math.PI*0.1-Math.PI*0.8*(i/(nTentacles-1));
+    const len=18+rng()*20;
+    const sway=Math.sin(t*(0.6+rng()*0.4)+i*0.9)*0.15;
+    const w=1.2+rng()*1.2;
+    ctx.beginPath();ctx.moveTo(Math.cos(a)*baseR,Math.sin(a)*baseR);
+    const mx=Math.cos(a+sway)*len*0.6;
+    const my=Math.sin(a+sway)*len*0.6;
+    const ex=Math.cos(a+sway*2)*len;
+    const ey=Math.sin(a+sway*2)*len;
+    ctx.quadraticCurveTo(mx,my,ex,ey);
+    ctx.strokeStyle=`hsla(${hue+rng()*30},50%,55%,0.5)`;
+    ctx.lineWidth=w;ctx.lineCap="round";ctx.stroke();
+    // Tip dot
+    ctx.beginPath();ctx.arc(ex,ey,w*0.8,0,Math.PI*2);
+    ctx.fillStyle=`hsla(${hue+40},60%,70%,0.5)`;ctx.fill();
+  }
+  // Base
+  ctx.beginPath();ctx.ellipse(0,0,baseR,baseR*0.5,0,0,Math.PI*2);
+  ctx.fillStyle=`hsla(${hue-20},40%,25%,0.6)`;ctx.fill();
+}
+
+function drawDecoArch(rng){
+  const w=30+rng()*10;
+  const h=40+rng()*15;
+  const hue=20+rng()*20;
+  const lit=14+rng()*8;
+  const thick=5+rng()*3;
+  // Shadow
+  ctx.fillStyle="rgba(0,0,0,0.1)";
+  // Left pillar
+  ctx.fillStyle=`hsl(${hue},10%,${lit}%)`;
+  ctx.fillRect(-w/2,-h,thick,h);
+  ctx.fillRect(w/2-thick,-h,thick,h);
+  // Arch top
+  ctx.beginPath();
+  ctx.arc(0,-h,w/2,Math.PI,0);
+  ctx.arc(0,-h,w/2-thick,0,Math.PI,true);
+  ctx.closePath();
+  ctx.fillStyle=`hsl(${hue},10%,${lit+2}%)`;ctx.fill();
+  // Keystone
+  ctx.fillStyle=`hsl(${hue},12%,${lit+5}%)`;
+  ctx.fillRect(-3,-h-w/2-2,6,thick+2);
+  // Mossy patches
+  ctx.beginPath();ctx.ellipse(-w/2+thick/2,-h*0.3,4,6,0,0,Math.PI*2);
+  ctx.fillStyle="hsla(110,25%,18%,0.25)";ctx.fill();
+  // Edge highlights
+  ctx.strokeStyle=`hsla(${hue},8%,${lit+10}%,0.2)`;ctx.lineWidth=0.5;
+  ctx.strokeRect(-w/2,-h,thick,h);ctx.strokeRect(w/2-thick,-h,thick,h);
+}
+
+function drawDecoLantern(t,rng){
+  const hue=40+rng()*140;
+  const pulse=0.5+Math.sin(t*(0.8+rng()*0.6))*0.25;
+  const h=12+rng()*6;
+  // Chain
+  ctx.beginPath();ctx.moveTo(0,-h-15);ctx.lineTo(0,-h);
+  ctx.strokeStyle="rgba(80,100,120,0.25)";ctx.lineWidth=0.6;ctx.stroke();
+  // Body
+  ctx.beginPath();
+  ctx.moveTo(-4,-h);ctx.quadraticCurveTo(-6,-h/2,- 4,0);
+  ctx.lineTo(4,0);ctx.quadraticCurveTo(6,-h/2,4,-h);ctx.closePath();
+  ctx.fillStyle=`hsla(${hue},30%,20%,0.4)`;ctx.fill();
+  ctx.strokeStyle=`hsla(${hue},25%,35%,0.4)`;ctx.lineWidth=0.6;ctx.stroke();
+  // Glow
+  const gr=12+pulse*8;
+  const gg=ctx.createRadialGradient(0,-h/2,1,0,-h/2,gr);
+  gg.addColorStop(0,`hsla(${hue},70%,65%,${0.2+pulse*0.15})`);
+  gg.addColorStop(0.5,`hsla(${hue},50%,50%,${0.08+pulse*0.06})`);
+  gg.addColorStop(1,"transparent");
+  ctx.fillStyle=gg;ctx.beginPath();ctx.arc(0,-h/2,gr,0,Math.PI*2);ctx.fill();
+  // Inner flame
+  ctx.beginPath();ctx.arc(0,-h/2,2+pulse*1.5,0,Math.PI*2);
+  ctx.fillStyle=`hsla(${hue},80%,75%,${0.5+pulse*0.3})`;ctx.fill();
 }
 
 function resize(){
@@ -2477,6 +3152,116 @@ window.toggleMute=function(){
   if(!voxEnabled&&voxMaster)voxMaster.gain.value=0;
   if(voxEnabled&&voxMaster)voxMaster.gain.value=0.15;
 };
+
+// ── Shop ──
+window.toggleShop=function(){
+  shopOpen=!shopOpen;
+  document.getElementById("shop-overlay").classList.toggle("open",shopOpen);
+  if(shopOpen)renderShop();
+};
+function renderShop(){
+  document.getElementById("shop-balance").textContent="— ◯ "+currency;
+  const body=document.getElementById("shop-body");
+  let html=`<div style="grid-column:1/-1;font-size:8px;color:#5a8a7a;letter-spacing:1px;margin:4px 0 -2px">DECORATIONS — drag to tank</div>`;
+  // Group decor by base id
+  for(const base of DECO_BASES){
+    html+=`<div class="shop-group" style="grid-column:1/-1;display:flex;gap:6px;align-items:stretch;flex-wrap:wrap;margin:4px 0">`;
+    html+=`<div style="min-width:36px;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:24px">${base.icon}</span><span style="font-size:8px;color:#8ab;margin-top:2px;text-align:center">${base.name}</span><span style="font-size:6px;color:#5a6a7a">${base.desc}</span></div>`;
+    for(const sz of DECO_SIZES){
+      const item=SHOP_ITEMS.find(i=>i.id===base.id&&i.sizeLabel===sz.label);
+      if(!item)continue;
+      const afford=currency>=item.cost;
+      html+=`<div class="shop-card${afford?"":" unafford"}" data-shop-idx="${SHOP_ITEMS.indexOf(item)}" style="flex:0 0 auto;min-width:52px;padding:6px 8px;text-align:center;${afford?"":"pointer-events:none"}">
+        <div style="font-size:11px;font-weight:700;color:${afford?"#acd":"#556"}">${sz.label}</div>
+        <div style="font-size:7px;color:#5a7a8a">${sz.scale.toFixed(1)}×</div>
+        <div class="sc-cost">◯${item.cost}</div>
+      </div>`;
+    }
+    html+=`</div>`;
+  }
+  html+=`<div style="font-size:8px;color:#a88ac8;letter-spacing:1px;margin:8px 0 2px;border-top:1px solid rgba(140,120,200,0.15);padding-top:8px">INTERACTIVE</div>`;
+  const inter=SHOP_ITEMS.filter(i=>i.cat==="interactive");
+  html+=`<div style="display:flex;flex-wrap:wrap;gap:8px">`;
+  html+=inter.map(it=>shopCardHTML(it,SHOP_ITEMS.indexOf(it))).join("");
+  html+=`</div>`;
+  body.innerHTML=html;
+  // Attach drag handlers to all cards
+  body.querySelectorAll(".shop-card:not(.unafford)").forEach(card=>{
+    const idx=parseInt(card.dataset.shopIdx);
+    if(isNaN(idx))return;
+    const item=SHOP_ITEMS[idx];
+    if(!item)return;
+    const onStart=(px,py)=>{
+      if(currency<item.cost)return;
+      shopDragItem=item;
+      shopDragPos={x:px,y:py};
+      const ghost=document.getElementById("shop-drag-ghost");
+      ghost.textContent=item.icon;
+      ghost.style.fontSize=Math.round(28+(item.scale||1)*12)+"px";
+      ghost.style.display="block";
+      ghost.style.left=px+"px";ghost.style.top=py+"px";
+    };
+    card.addEventListener("mousedown",e=>{e.preventDefault();onStart(e.clientX,e.clientY)});
+    card.addEventListener("touchstart",e=>{e.preventDefault();const t=e.touches[0];onStart(t.clientX,t.clientY)},{passive:false});
+  });
+}
+function shopCardHTML(it,idx){
+  const afford=currency>=it.cost;
+  return`<div class="shop-card${afford?"":" unafford"}" data-shop-idx="${idx}" style="flex:0 0 auto;min-width:100px;${afford?"":"pointer-events:none"}">
+    <div class="sc-icon">${it.icon}</div>
+    <div class="sc-name">${it.name}</div>
+    <div class="sc-desc">${it.desc}</div>
+    <div class="sc-cost">◯ ${it.cost}</div>
+  </div>`;
+}
+
+// Global shop drag move/end
+document.addEventListener("mousemove",e=>{
+  if(!shopDragItem)return;
+  shopDragPos={x:e.clientX,y:e.clientY};
+  const ghost=document.getElementById("shop-drag-ghost");
+  ghost.style.left=e.clientX+"px";ghost.style.top=e.clientY+"px";
+});
+document.addEventListener("touchmove",e=>{
+  if(!shopDragItem)return;
+  const t=e.touches[0];
+  shopDragPos={x:t.clientX,y:t.clientY};
+  const ghost=document.getElementById("shop-drag-ghost");
+  ghost.style.left=t.clientX+"px";ghost.style.top=t.clientY+"px";
+},{passive:true});
+
+function finishShopDrag(){
+  if(!shopDragItem)return;
+  const ghost=document.getElementById("shop-drag-ghost");
+  ghost.style.display="none";
+  // Check if dropped over the tank canvas
+  const rect=canvas.getBoundingClientRect();
+  const px=shopDragPos.x,py=shopDragPos.y;
+  if(px>=rect.left&&px<=rect.right&&py>=rect.top&&py<=rect.bottom){
+    const item=shopDragItem;
+    if(currency>=item.cost){
+      currency-=item.cost;updCurrency();
+      const sx=(px-rect.left)/rect.width*W;
+      const sy=(py-rect.top)/rect.height*H;
+      // Decor drops to substrate line with slight variation, interactive floats where placed
+      const subY=substrate.baseY||H*0.88;
+      const jitterY=Math.random()*6;
+      const placeY=item.cat==="interactive"
+        ?Math.max(30,Math.min(H*0.85,sy))
+        :subY-jitterY;
+      const dec={type:item.id,x:sx,y:placeY,seed:Math.random()*99999|0,
+        scale:item.scale||1,lastRing:0,ring:0,glow:0,lastTrigger:0,inited:false};
+      if(item.id==="orb"){dec.vx=0;dec.vy=0;dec.baseY=placeY;dec.bobPhase=Math.random()*Math.PI*2}
+      decorations.push(dec);
+      floatTexts.push({x:sx,y:placeY-20,text:"-◯"+item.cost,age:0,hue:160});
+      // Close shop
+      shopOpen=false;document.getElementById("shop-overlay").classList.remove("open");
+    }
+  }
+  shopDragItem=null;shopDragPos=null;
+}
+document.addEventListener("mouseup",finishShopDrag);
+document.addEventListener("touchend",finishShopDrag);
 window.codexSpawn=function(key){
   if(currency<50)return;
   const entry=codex.get(key);
@@ -2640,14 +3425,7 @@ function renderCodex(){
     const gStr=card.getAttribute("data-genome");
     if(!cvs||!gStr)return;
     const genome=[...gStr];
-    let rendered=false;
-    card.addEventListener("mouseenter",()=>{
-      if(!rendered){rendered=true;renderCodexPreview(cvs,genome)}
-    });
-    // Also render on touch for mobile
-    card.addEventListener("touchstart",()=>{
-      if(!rendered){rendered=true;renderCodexPreview(cvs,genome)}
-    },{passive:true});
+    renderCodexPreview(cvs,genome);
   });
 }
 window.spawn=function(){if(currency<15)return;currency-=15;updCurrency();const yRange=H*0.75;const c=createCreature(W/2-60+Math.random()*120,H*0.15+Math.random()*yRange*0.6);floatTexts.push({x:c.x,y:c.y-20,text:"-◯15",age:0,hue:0});creatures.push(c);viewId=c.id;updUI()};
@@ -2769,7 +3547,7 @@ canvas.addEventListener("mousedown",e=>{startDrag(cPos(e).x,cPos(e).y)});
 canvas.addEventListener("mousemove",e=>{const p=cPos(e);if(dragId)moveDrag(p.x,p.y);if(placingGrow){growPreview={x:p.x,y:p.y}}const bi=hitBubble(p.x,p.y);if(bi>=0)popBubble(bi)});
 canvas.addEventListener("mouseup",e=>{endDrag(cPos(e).x,cPos(e).y)});
 canvas.addEventListener("mouseleave",()=>{if(dragId){canvas.style.cursor="crosshair";dragId=null}growPreview=null});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(codexOpen){codexOpen=false;document.getElementById("codex-overlay").classList.remove("open")}else if(placingGrow){placingGrow=false;canvas.style.cursor="crosshair";growPreview=null}}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(shopOpen){shopOpen=false;document.getElementById("shop-overlay").classList.remove("open")}else if(codexOpen){codexOpen=false;document.getElementById("codex-overlay").classList.remove("open")}else if(placingGrow){placingGrow=false;canvas.style.cursor="crosshair";growPreview=null}}});
 let touchPos=null;
 canvas.addEventListener("touchstart",e=>{e.preventDefault();touchPos=cPos(e);if(placingGrow){growPreview={x:touchPos.x,y:touchPos.y}}startDrag(touchPos.x,touchPos.y)},{passive:false});
 canvas.addEventListener("touchmove",e=>{e.preventDefault();touchPos=cPos(e);if(dragId){moveDrag(touchPos.x,touchPos.y)}if(placingGrow){growPreview={x:touchPos.x,y:touchPos.y}}const bi=hitBubble(touchPos.x,touchPos.y);if(bi>=0)popBubble(bi)},{passive:false});
@@ -2827,11 +3605,12 @@ function frame(now){
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
   const tm=Date.now()*.0003;ctx.globalAlpha=.018;
   for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(W*.3+Math.sin(tm+i*1.3)*W*.3,H*.3+Math.cos(tm*.7+i*.9)*H*.3,60+Math.sin(tm+i)*30,0,Math.PI*2);ctx.fillStyle=`hsla(${190+i*15},50%,70%,1)`;ctx.fill()}
-  ctx.globalAlpha=1;drawSubstrate(now);drawP();
+  ctx.globalAlpha=1;drawSubstrate(now);drawDecorations(now);drawP();
   // Jelly title behind creatures
   drawTitle(now);
   // Grow zones (update only, draw later on top)
   updateGrowZones(dt);
+  updateInteractiveDecorations(dt);
   // Update all creatures
   for(const c of creatures) updateCreature(c,dt);
   // Soft body collisions — multiple iterations for stability
