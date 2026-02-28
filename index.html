@@ -22,12 +22,45 @@
   .btn-breed.show{display:inline-block}
   .btn-clear{background:rgba(240,80,80,0.12);border:1px solid rgba(240,80,80,0.25);color:#e88}
   .btn-clear:active{background:rgba(240,80,80,0.3)}
+  .btn-maint{background:rgba(200,180,100,0.12);border:1px solid rgba(200,180,100,0.25);color:#cb8;font-size:10px}
+  .btn-maint.active{background:rgba(200,180,100,0.3);border-color:rgba(200,180,100,0.5);color:#ec8}
+  #maint-bar{display:none;padding:5px 12px;background:rgba(30,25,10,0.85);border-bottom:1px solid rgba(200,180,100,0.2);flex-shrink:0;align-items:center;gap:8px;font-size:9px;color:#cb8}
+  #maint-bar.open{display:flex}
+  #maint-bar .mb-label{font-weight:600;letter-spacing:1px;font-size:8px;color:#ec8}
+  #maint-bar .mb-info{flex:1;color:#8a9a6a;font-size:8px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #maint-bar .mb-btn{padding:3px 8px;border-radius:4px;font-size:8px;font-family:inherit;cursor:pointer;border:1px solid;white-space:nowrap}
+  #maint-bar .mb-sell{border-color:rgba(240,100,80,0.3);background:rgba(240,100,80,0.1);color:#e88}
+  #maint-bar .mb-move{border-color:rgba(80,170,240,0.3);background:rgba(80,170,240,0.1);color:#5ae}
+  #maint-bar .mb-xfer{border-color:rgba(100,220,180,0.3);background:rgba(100,220,180,0.1);color:#6db}
+  #maint-bar .mb-btn:disabled{opacity:0.3;cursor:default}
   .btn-sell{background:rgba(240,180,60,0.15);border:1px solid rgba(240,180,60,0.3);color:#ec6;display:none}
   .btn-sell:active{background:rgba(240,180,60,0.35)}
   .btn-sell.show{display:inline-block}
   .btn-grow{background:rgba(80,240,140,0.2);border:1px solid rgba(80,240,140,0.4);color:#6e8;font-size:10px;font-weight:600}
   .btn-codex{background:rgba(240,200,80,0.15);border:1px solid rgba(240,200,80,0.3);color:#ec8;font-size:10px}
   .btn-shop{background:rgba(100,220,180,0.15);border:1px solid rgba(100,220,180,0.3);color:#6db;font-size:10px}
+  #tank-bar{padding:4px 12px;display:flex;align-items:center;border-bottom:1px solid rgba(100,140,180,0.08);background:rgba(6,14,28,0.7);flex-shrink:0;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+  #tank-bar::-webkit-scrollbar{display:none}
+  #tank-tabs{display:flex;gap:4px;align-items:center}
+  .tank-tab{padding:4px 10px;border-radius:4px;font-size:9px;font-family:inherit;cursor:pointer;border:1px solid rgba(80,140,200,0.2);background:rgba(20,40,60,0.4);color:#6a8a;font-weight:400;white-space:nowrap}
+  .tank-tab.active{background:rgba(80,170,240,0.2);border-color:rgba(80,170,240,0.4);color:#5ae;font-weight:600}
+  .tank-tab.add{color:#6db;border-color:rgba(100,220,180,0.3);background:rgba(100,220,180,0.1)}
+  #cap-warn{font-size:8px;color:#e88;margin-left:6px;display:none}
+  #confirm-overlay{position:fixed;inset:0;z-index:1200;background:rgba(4,10,20,0.92);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center}
+  #confirm-overlay.open{display:flex}
+  .confirm-box{background:rgba(12,24,40,0.95);border:1px solid rgba(240,100,80,0.3);border-radius:10px;padding:20px 24px;max-width:320px;width:90%;text-align:center}
+  .confirm-box h3{color:#e88;font-size:12px;margin:0 0 8px;letter-spacing:1px}
+  .confirm-box p{color:#8ab;font-size:9px;margin:0 0 14px;line-height:1.5}
+  .confirm-box .cb{padding:6px 14px;border-radius:5px;cursor:pointer;font-family:inherit;font-size:10px;border:1px solid;margin:0 4px}
+  #transfer-overlay{position:fixed;inset:0;z-index:1200;background:rgba(4,10,20,0.92);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center}
+  #transfer-overlay.open{display:flex}
+  #deco-xfer-overlay{position:fixed;inset:0;z-index:1200;background:rgba(4,10,20,0.92);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center}
+  #deco-xfer-overlay.open{display:flex}
+  .transfer-box{background:rgba(12,24,40,0.95);border:1px solid rgba(80,170,240,0.3);border-radius:10px;padding:20px 24px;max-width:320px;width:90%}
+  .transfer-box h3{color:#5ae;font-size:12px;margin:0 0 10px;letter-spacing:1px;text-align:center}
+  .transfer-tank-btn{display:block;width:100%;padding:8px;margin:4px 0;border-radius:5px;cursor:pointer;font-family:inherit;font-size:10px;border:1px solid rgba(80,170,240,0.3);background:rgba(80,170,240,0.1);color:#5ae;text-align:left}
+  .transfer-tank-btn:disabled{opacity:0.3;cursor:default}
+  .transfer-tank-btn:hover:not(:disabled){background:rgba(80,170,240,0.2)}
   #shop-overlay{position:fixed;inset:0;background:rgba(4,10,20,0.95);z-index:1000;display:none;flex-direction:column;backdrop-filter:blur(8px)}
   #shop-overlay.open{display:flex}
   #shop-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(100,180,160,0.15);flex-shrink:0}
@@ -110,16 +143,32 @@
 </head>
 <body>
 <div id="header">
-  <div class="hdr-left"><span class="logo">LIOLUME</span><span class="count" id="cnt">0</span><span class="count" id="currency" style="color:#6be;margin-left:8px">◯ 0</span></div>
+  <div class="hdr-left"><span class="logo">LIOLUME</span><span class="count" id="cnt">0</span><span id="cap-warn"></span><span class="count" id="currency" style="color:#6be;margin-left:8px">◯ 0</span></div>
   <div class="right">
     <button class="btn btn-spawn" id="spawn-btn" onclick="spawn()">+ SPAWN (◯15)</button>
     <button class="btn btn-breed" id="breed-btn" onclick="breed()">⚭ BREED</button>
     <button class="btn btn-sell" id="sell-btn" onclick="sell()">✕ SELL</button>
+    <button class="btn" id="transfer-btn" onclick="showTransfer()" style="background:rgba(80,170,240,0.15);border:1px solid rgba(80,170,240,0.3);color:#5ae;font-size:10px;display:none">⇄ MOVE</button>
     <button class="btn btn-grow" id="grow-btn" onclick="startGrowZone()">⌘ GROW (◯10)</button>
     <button class="btn btn-codex" id="codex-btn" onclick="toggleCodex()">📖 <span id="codex-count">0</span></button>
     <button class="btn" id="mute-btn" onclick="toggleMute()" style="background:rgba(140,120,200,0.15);border:1px solid rgba(140,120,200,0.3);color:#a8b">🔊</button>
     <button class="btn btn-shop" id="shop-btn" onclick="toggleShop()">🏪 SHOP</button>
-    <button class="btn btn-clear" onclick="clearAll()">CLEAR</button>
+    <button class="btn btn-maint" id="maint-btn" onclick="toggleMaint()">🔧</button>
+    <button class="btn btn-clear" onclick="confirmClear()">CLEAR</button>
+  </div>
+</div>
+<div id="tank-bar"><div id="tank-tabs"></div></div>
+<div id="maint-bar">
+  <span class="mb-label">🔧 MAINTENANCE</span>
+  <span class="mb-info" id="maint-info">Tap & drag decorations to move them</span>
+  <button class="mb-btn mb-sell" id="maint-sell-btn" onclick="maintSell()" disabled>SELL</button>
+  <button class="mb-btn mb-xfer" id="maint-xfer-btn" onclick="maintTransferDeco()" disabled>TRANSFER</button>
+</div>
+<div id="deco-xfer-overlay">
+  <div class="transfer-box">
+    <h3>⇄ MOVE ITEM TO TANK</h3>
+    <div id="deco-xfer-targets"></div>
+    <button class="cb" onclick="cancelDecoXfer()" style="margin-top:12px;display:block;width:100%;border-color:rgba(100,140,180,0.3);background:rgba(40,60,80,0.3);color:#8ab;padding:6px;border-radius:5px;cursor:pointer;font-family:inherit;font-size:10px">CANCEL</button>
   </div>
 </div>
 <div id="status-bar"><span id="status-text"></span></div>
@@ -157,6 +206,23 @@
   <div id="shop-body"></div>
 </div>
 <div id="shop-drag-ghost"></div>
+<div id="confirm-overlay">
+  <div class="confirm-box">
+    <h3>⚠ CLEAR TANK</h3>
+    <p id="confirm-msg"></p>
+    <div>
+      <button class="cb" onclick="cancelClear()" style="border-color:rgba(100,140,180,0.3);background:rgba(40,60,80,0.3);color:#8ab">CANCEL</button>
+      <button class="cb" onclick="execClear()" style="border-color:rgba(240,100,80,0.4);background:rgba(240,100,80,0.15);color:#e88;font-weight:600">CLEAR & SELL</button>
+    </div>
+  </div>
+</div>
+<div id="transfer-overlay">
+  <div class="transfer-box">
+    <h3>⇄ TRANSFER TO TANK</h3>
+    <div id="transfer-targets"></div>
+    <button class="cb" onclick="cancelTransfer()" style="margin-top:12px;display:block;width:100%;border-color:rgba(100,140,180,0.3);background:rgba(40,60,80,0.3);color:#8ab;padding:6px;border-radius:5px;cursor:pointer;font-family:inherit;font-size:10px">CANCEL</button>
+  </div>
+</div>
 <script>
 const BASES=["A","T","C","G"],COMP={"A":"T","T":"A","C":"G","G":"C"};
 const BVAL={"A":0,"T":1,"C":2,"G":3};
@@ -168,6 +234,13 @@ let generation=0,drawerOpen=false,activeTrait=null,codexOpen=false;
 const codex=new Map(); // species key → {name, prose, tags, genome, count, firstSeen}
 const BPC=52;
 let dragId=null,dragOff={x:0,y:0},isDragging=false,dragStartTime=0,dragStartX=0,dragStartY=0;
+
+// Multi-tank system
+const isMobile=window.innerWidth<700;
+const TANK_CAP=isMobile?5:20;
+const NEW_TANK_COST=isMobile?30:60;
+let tanks=[{name:"Tank 1",creatures:[],decorations:[],bubbles:[],growZones:[],floatTexts:[],hearts:[]}];
+let currentTank=0;
 let helixAngle=0,helixGenome=null,helixCreatureId=null,helixLitSet=null,helixHoverBP=-1;
 
 // ── Waveforms ──
@@ -1467,6 +1540,9 @@ function drawLume(c,selType){
   }
 
   if(selType){
+    const col=selType===1?"rgba(80,170,240,0.5)":selType===2?"rgba(240,160,60,0.5)":"rgba(160,200,160,0.3)";
+    ctx.strokeStyle=col;ctx.lineWidth=selType===3?1:1.5;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.arc(0,0,t.maxReach+10,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
     ctx.font="bold 10px 'JetBrains Mono',monospace";ctx.textAlign="center";
     ctx.fillStyle=selType===1?"#5ae":selType===2?"#ea5":"#8a9";
     ctx.fillText(selType===1?"P1":selType===2?"P2":"👁",0,-t.maxReach-18);
@@ -1899,6 +1975,7 @@ function growZoneMultiplier(cx,cy){
 let substrate={rocks:[],plants:[],pebbles:[]};
 let decorations=[]; // placed shop items {type, x, y, seed}
 let shopOpen=false, shopDragItem=null, shopDragPos=null;
+let maintMode=false, maintSelIdx=-1, maintDragging=false, maintDragOff={x:0,y:0};
 
 // Size multipliers and cost scaling
 const DECO_SIZES=[
@@ -1939,6 +2016,7 @@ SHOP_ITEMS.push(
   {id:"bell",name:"Deep Bell",cost:35,desc:"Resonant gong struck by passing LioLumes",icon:"🔔",cat:"interactive",scale:1},
   {id:"mirror",name:"Echo Pool",cost:40,desc:"Reflects light — LioLumes vocalize when close",icon:"🪞",cat:"interactive",scale:1},
   {id:"drum",name:"Coral Drum",cost:20,desc:"Thumps softly when touched",icon:"🥁",cat:"interactive",scale:1},
+  {id:"nursery",name:"Nursery Light",cost:35,desc:"Warm glow attracts eggs & larvae nearby",icon:"🪺",cat:"interactive",scale:1},
 );
 function seededRand(s){return function(){s=(s*9301+49297)%233280;return s/233280}}
 
@@ -2149,6 +2227,31 @@ function drawSubstrate(time){
 }
 
 // ── Decorations ──
+function drawMaintOverlay(){
+  for(let i=0;i<decorations.length;i++){
+    const d=decorations[i];
+    const sc=d.scale||1;
+    const r=18*sc;
+    const sel=i===maintSelIdx;
+    ctx.save();ctx.translate(d.x,d.y);
+    // Hitbox outline
+    ctx.beginPath();
+    ctx.roundRect?ctx.roundRect(-r,-r*1.3,r*2,r*2.3,4):ctx.rect(-r,-r*1.3,r*2,r*2.3);
+    ctx.strokeStyle=sel?"rgba(240,200,80,0.6)":"rgba(200,180,100,0.2)";
+    ctx.lineWidth=sel?2:1;
+    ctx.setLineDash(sel?[]:[3,3]);ctx.stroke();ctx.setLineDash([]);
+    if(sel){
+      // Gold glow behind selected
+      ctx.fillStyle="rgba(240,200,80,0.06)";ctx.fill();
+      // Label
+      ctx.font="bold 8px 'JetBrains Mono',monospace";ctx.textAlign="center";
+      ctx.fillStyle="rgba(240,200,80,0.7)";
+      ctx.fillText("SELECTED",-0,-r*1.3-5);
+    }
+    ctx.restore();
+  }
+}
+
 function drawDecorations(time){
   const t=time*0.001;
   // Sort by y for depth ordering (further back draws first)
@@ -2176,6 +2279,7 @@ function drawDecorations(time){
       case "bell": drawDecoBell(d,t);break;
       case "mirror": drawDecoMirror(d,t);break;
       case "drum": drawDecoDrum(d,t);break;
+      case "nursery": drawDecoNursery(d,t);break;
     }
     ctx.restore();
   }
@@ -2187,6 +2291,7 @@ function initInteractive(d){
   if(d.type==="orb"){d.vx=d.vx||0;d.vy=d.vy||0;d.glow=d.glow||0;d.baseY=d.baseY||d.y;d.bobPhase=d.bobPhase||Math.random()*Math.PI*2;d.lastRing=d.lastRing||0}
   if(d.type==="chime"||d.type==="bell"||d.type==="drum"){d.ring=0;d.lastRing=0}
   if(d.type==="mirror"){d.glow=0;d.lastTrigger=0}
+  if(d.type==="nursery"){d.glow=0}
 }
 
 function updateInteractiveDecorations(dt){
@@ -2244,6 +2349,25 @@ function updateInteractiveDecorations(dt){
           voxCall(c); // triggers creature to vocalize
         }
       }
+    }
+    if(d.type==="nursery"){
+      d.glow*=0.97;
+      // Attract immature creatures (eggs & larvae) within radius
+      const attractR=80;
+      const force=0.35;
+      let any=false;
+      for(const c of creatures){
+        if((c.maturity||0)>=0.5)continue; // only attract young
+        const dx=d.x-c.x,dy=d.y-c.y;
+        const dist=Math.hypot(dx,dy);
+        if(dist<attractR&&dist>8){
+          const str=force*(1-dist/attractR);
+          c.vx+=dx/dist*str;
+          c.vy+=dy/dist*str;
+          any=true;
+        }
+      }
+      if(any)d.glow=Math.min(1,d.glow+0.08);
     }
   }
 }
@@ -2440,6 +2564,45 @@ function drawDecoDrum(d,t){
     ctx.globalAlpha=hit*0.3;
     ctx.beginPath();ctx.arc(0,-10,14+hit*8,0,Math.PI*2);
     ctx.strokeStyle="hsla(40,40%,60%,0.3)";ctx.lineWidth=1;ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+}
+
+function drawDecoNursery(d,t){
+  initInteractive(d);
+  const pulse=0.5+Math.sin(t*1.2+d.seed)*0.3;
+  const warmth=d.glow||0;
+  // Nest base
+  ctx.beginPath();ctx.ellipse(0,2,18,8,0,0,Math.PI*2);
+  ctx.fillStyle=`hsla(30,35%,22%,0.5)`;ctx.fill();
+  ctx.strokeStyle=`hsla(30,25%,30%,0.3)`;ctx.lineWidth=1.5;ctx.stroke();
+  // Twigs
+  for(let i=0;i<6;i++){
+    const a=i/6*Math.PI*2;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a)*14,2+Math.sin(a)*5);
+    ctx.lineTo(Math.cos(a)*22,2+Math.sin(a)*9);
+    ctx.strokeStyle=`hsla(25,30%,28%,0.4)`;ctx.lineWidth=1.2;ctx.lineCap="round";ctx.stroke();
+  }
+  // Warm glow
+  const gr=30+pulse*10+warmth*15;
+  const gg=ctx.createRadialGradient(0,-2,3,0,-2,gr);
+  gg.addColorStop(0,`hsla(40,70%,65%,${0.12+warmth*0.15+pulse*0.05})`);
+  gg.addColorStop(0.5,`hsla(30,50%,50%,${0.05+warmth*0.08})`);
+  gg.addColorStop(1,"transparent");
+  ctx.beginPath();ctx.arc(0,-2,gr,0,Math.PI*2);ctx.fillStyle=gg;ctx.fill();
+  // Central warm spot
+  ctx.beginPath();ctx.arc(0,-2,4+pulse*2,0,Math.PI*2);
+  ctx.fillStyle=`hsla(40,80%,70%,${0.25+warmth*0.2})`;ctx.fill();
+  // Floating motes when active
+  if(warmth>0.1){
+    ctx.globalAlpha=warmth*0.5;
+    for(let i=0;i<4;i++){
+      const a=t*0.5+i*1.57;
+      const r=12+Math.sin(t*0.8+i*2)*6;
+      ctx.beginPath();ctx.arc(Math.cos(a)*r,Math.sin(a)*r*0.6-4,1.2,0,Math.PI*2);
+      ctx.fillStyle="hsla(40,70%,75%,0.5)";ctx.fill();
+    }
     ctx.globalAlpha=1;
   }
 }
@@ -2816,9 +2979,21 @@ function handleSelectById(cid){
 }
 function getSelType(c){if(c.id===parent1Id)return 1;if(c.id===parent2Id)return 2;if(c.id===viewId)return 3;return 0}
 
-function startDrag(mx,my){if(placeGrowZone(mx,my))return;const bi=hitBubble(mx,my);if(bi>=0){popBubble(bi);return}const cl=hitCreature(mx,my);if(cl){dragId=cl.id;dragOff.x=cl.x-mx;dragOff.y=cl.y-my;isDragging=false;dragStartTime=performance.now();dragStartX=mx;dragStartY=my;canvas.style.cursor="grabbing"}else{dragId=null;isDragging=false;dragStartTime=performance.now();dragStartX=mx;dragStartY=my}}
-function moveDrag(mx,my){if(!dragId)return;const c=creatures.find(c=>c.id===dragId);if(!c)return;const dx=mx-dragStartX,dy=my-dragStartY;if(!isDragging&&Math.hypot(dx,dy)<5)return;isDragging=true;const pad=15+c.traits.maxReach*0.5;const bpad=H*0.13+c.traits.maxReach*0.5;c.x=Math.max(pad,Math.min(W-pad,mx+dragOff.x));c.y=Math.max(pad,Math.min(H-bpad,my+dragOff.y));c.vx=0;c.vy=0}
-function endDrag(mx,my){if(dragId){const wasDrag=isDragging;const clickedId=dragId;const c=creatures.find(c=>c.id===dragId);if(c){c.vx=0;c.vy=0}canvas.style.cursor="crosshair";dragId=null;if(!wasDrag)handleSelectById(clickedId)}else{if(!isDragging){const moved=Math.hypot(mx-dragStartX,my-dragStartY);if(moved<5)handleSelect(mx,my)}canvas.style.cursor="crosshair"}}
+function hitDeco(mx,my){
+  // Check decorations in reverse order (top-most first)
+  for(let i=decorations.length-1;i>=0;i--){
+    const d=decorations[i];
+    const sc=d.scale||1;
+    const hitR=20*sc; // base hit radius scaled
+    if(Math.hypot(mx-d.x,my-d.y)<hitR)return i;
+  }
+  return -1;
+}
+
+function startDrag(mx,my){if(maintMode){maintHandleDown(mx,my);return}
+  if(placeGrowZone(mx,my))return;const bi=hitBubble(mx,my);if(bi>=0){popBubble(bi);return}const cl=hitCreature(mx,my);if(cl){dragId=cl.id;dragOff.x=cl.x-mx;dragOff.y=cl.y-my;isDragging=false;dragStartTime=performance.now();dragStartX=mx;dragStartY=my;canvas.style.cursor="grabbing"}else{dragId=null;isDragging=false;dragStartTime=performance.now();dragStartX=mx;dragStartY=my}}
+function moveDrag(mx,my){if(maintMode){maintHandleMove(mx,my);return}if(!dragId)return;const c=creatures.find(c=>c.id===dragId);if(!c)return;const dx=mx-dragStartX,dy=my-dragStartY;if(!isDragging&&Math.hypot(dx,dy)<5)return;isDragging=true;const pad=15+c.traits.maxReach*0.5;const bpad=H*0.13+c.traits.maxReach*0.5;c.x=Math.max(pad,Math.min(W-pad,mx+dragOff.x));c.y=Math.max(pad,Math.min(H-bpad,my+dragOff.y));c.vx=0;c.vy=0}
+function endDrag(mx,my){if(maintMode){maintHandleUp(mx,my);return}if(dragId){const wasDrag=isDragging;const clickedId=dragId;const c=creatures.find(c=>c.id===dragId);if(c){c.vx=0;c.vy=0}canvas.style.cursor="crosshair";dragId=null;if(!wasDrag)handleSelectById(clickedId)}else{if(!isDragging){const moved=Math.hypot(mx-dragStartX,my-dragStartY);if(moved<5)handleSelect(mx,my)}canvas.style.cursor="crosshair"}}
 
 // ── Helix DNA visualization ──
 const HELIX_TURNS=5.2; // full turns across 52 BP
@@ -3022,15 +3197,15 @@ function hexG(c){return parseInt(c.slice(3,5),16)}
 function hexB(c){return parseInt(c.slice(5,7),16)}
 
 // ── UI ──
-function updUI(){updCnt();updBreed();updStatus();buildPanel();document.getElementById("hint").style.display=(parent1Id||parent2Id||viewId)?"none":"";document.getElementById("codex-count").textContent=codex.size}
-function updCnt(){document.getElementById("cnt").textContent=creatures.length+" in tank"}
+function updUI(){updCnt();updBreed();updStatus();buildPanel();document.getElementById("hint").style.display=(parent1Id||parent2Id||viewId)?"none":"";document.getElementById("codex-count").textContent=codex.size;updCapWarn();renderTankTabs();document.getElementById("transfer-btn").style.display=(viewId&&tanks.length>1)?"":"none"}
+function updCnt(){document.getElementById("cnt").textContent=creatures.length+"/"+TANK_CAP}
 function updBreed(){
   const breedReady=!!(parent1Id&&parent2Id);
   const canAfford=currency>=10;
   const bb=document.getElementById("breed-btn");
   bb.classList.toggle("show",breedReady);
-  bb.textContent=breedReady?(canAfford?"⚭ BREED (◯10)":"⚭ NEED ◯10"):"⚭ BREED";
-  bb.style.opacity=breedReady&&!canAfford?"0.4":"1";
+  bb.textContent=breedReady?(canAfford?(isAtCap()?"⚭ TANK FULL":"⚭ BREED (◯10)"):"⚭ NEED ◯10"):"⚭ BREED";
+  bb.style.opacity=breedReady&&(!canAfford||isAtCap())?"0.4":"1";
   const sb=document.getElementById("sell-btn");
   const showSell=!!(viewId&&!parent2Id);
   sb.classList.toggle("show",showSell);
@@ -3039,7 +3214,8 @@ function updBreed(){
     sb.textContent=sv&&(sv.maturity||0)>=0.95?"✕ SELL (+◯10)":"✕ SELL";
   }
   const spb=document.getElementById("spawn-btn");
-  spb.style.opacity=currency>=15?"1":"0.4";
+  spb.style.opacity=(currency>=15&&!isAtCap())?"1":"0.4";
+  spb.textContent=isAtCap()?"TANK FULL":"+ SPAWN (◯15)";
   const gb=document.getElementById("grow-btn");
   gb.style.opacity=currency>=10?"1":"0.4";
 }
@@ -3200,6 +3376,9 @@ function renderShop(){
       ghost.style.fontSize=Math.round(28+(item.scale||1)*12)+"px";
       ghost.style.display="block";
       ghost.style.left=px+"px";ghost.style.top=py+"px";
+      // Hide shop overlay so tank is visible for drop target
+      document.getElementById("shop-overlay").style.opacity="0";
+      document.getElementById("shop-overlay").style.pointerEvents="none";
     };
     card.addEventListener("mousedown",e=>{e.preventDefault();onStart(e.clientX,e.clientY)});
     card.addEventListener("touchstart",e=>{e.preventDefault();const t=e.touches[0];onStart(t.clientX,t.clientY)},{passive:false});
@@ -3224,16 +3403,20 @@ document.addEventListener("mousemove",e=>{
 });
 document.addEventListener("touchmove",e=>{
   if(!shopDragItem)return;
+  e.preventDefault();
   const t=e.touches[0];
   shopDragPos={x:t.clientX,y:t.clientY};
   const ghost=document.getElementById("shop-drag-ghost");
   ghost.style.left=t.clientX+"px";ghost.style.top=t.clientY+"px";
-},{passive:true});
+},{passive:false});
 
 function finishShopDrag(){
   if(!shopDragItem)return;
   const ghost=document.getElementById("shop-drag-ghost");
   ghost.style.display="none";
+  const overlay=document.getElementById("shop-overlay");
+  // Restore overlay visibility
+  overlay.style.opacity="";overlay.style.pointerEvents="";
   // Check if dropped over the tank canvas
   const rect=canvas.getBoundingClientRect();
   const px=shopDragPos.x,py=shopDragPos.y;
@@ -3243,27 +3426,182 @@ function finishShopDrag(){
       currency-=item.cost;updCurrency();
       const sx=(px-rect.left)/rect.width*W;
       const sy=(py-rect.top)/rect.height*H;
-      // Decor drops to substrate line with slight variation, interactive floats where placed
       const subY=substrate.baseY||H*0.88;
       const jitterY=Math.random()*6;
       const placeY=item.cat==="interactive"
         ?Math.max(30,Math.min(H*0.85,sy))
         :subY-jitterY;
-      const dec={type:item.id,x:sx,y:placeY,seed:Math.random()*99999|0,
+      const dec={type:item.id,x:sx,y:placeY,seed:Math.random()*99999|0,cost:item.cost,
         scale:item.scale||1,lastRing:0,ring:0,glow:0,lastTrigger:0,inited:false};
       if(item.id==="orb"){dec.vx=0;dec.vy=0;dec.baseY=placeY;dec.bobPhase=Math.random()*Math.PI*2}
       decorations.push(dec);
       floatTexts.push({x:sx,y:placeY-20,text:"-◯"+item.cost,age:0,hue:160});
       // Close shop
-      shopOpen=false;document.getElementById("shop-overlay").classList.remove("open");
+      shopOpen=false;overlay.classList.remove("open");
     }
+  }else{
+    // Dropped outside tank - keep shop open, just cancel
   }
   shopDragItem=null;shopDragPos=null;
 }
 document.addEventListener("mouseup",finishShopDrag);
 document.addEventListener("touchend",finishShopDrag);
+
+// ── Maintenance Mode ──
+window.toggleMaint=function(){
+  maintMode=!maintMode;
+  maintSelIdx=-1;maintDragging=false;
+  document.getElementById("maint-btn").classList.toggle("active",maintMode);
+  document.getElementById("maint-btn").textContent=maintMode?"🔧 DONE":"🔧";
+  document.getElementById("maint-bar").classList.toggle("open",maintMode);
+  if(maintMode){
+    // Deselect all creatures
+    parent1Id=parent2Id=viewId=null;dragId=null;
+    canvas.style.cursor="pointer";
+    updMaintUI();
+    // Hide creature buttons
+    for(const id of["spawn-btn","breed-btn","sell-btn","transfer-btn","grow-btn"]){
+      document.getElementById(id).style.display="none";
+    }
+  }else{
+    canvas.style.cursor="crosshair";
+    // Restore buttons
+    for(const id of["spawn-btn","grow-btn"]){
+      document.getElementById(id).style.display="";
+    }
+    // breed/sell/transfer visibility handled by updUI
+  }
+  updUI();
+};
+function updMaintUI(){
+  const info=document.getElementById("maint-info");
+  const sellBtn=document.getElementById("maint-sell-btn");
+  const xferBtn=document.getElementById("maint-xfer-btn");
+  if(maintSelIdx<0||maintSelIdx>=decorations.length){
+    maintSelIdx=-1;
+    info.textContent="Tap & drag decorations to move them";
+    sellBtn.disabled=xferBtn.disabled=true;
+    sellBtn.textContent="SELL";
+    return;
+  }
+  const d=decorations[maintSelIdx];
+  const base=DECO_BASES.find(b=>b.id===d.type);
+  const interItem=SHOP_ITEMS.find(i=>i.id===d.type&&i.cat==="interactive");
+  const name=base?base.name:interItem?interItem.name:d.type;
+  const sellVal=Math.max(1,Math.round((d.cost||5)/2));
+  info.innerHTML=`<span style="color:#ec8">${name}</span> (${(d.scale||1).toFixed(1)}×)`;
+  sellBtn.disabled=false;
+  sellBtn.textContent="SELL +◯"+sellVal;
+  xferBtn.disabled=tanks.length<2;
+}
+
+function hitDeco(mx,my){
+  // Search in reverse (top-drawn last = first hit)
+  for(let i=decorations.length-1;i>=0;i--){
+    const d=decorations[i];
+    const sc=d.scale||1;
+    const hitR=20*sc;
+    if(Math.abs(mx-d.x)<hitR&&Math.abs(my-d.y)<hitR*1.5)return i;
+  }
+  return -1;
+}
+
+// Intercept tank clicks in maint mode
+function maintHandleDown(mx,my){
+  if(!maintMode)return false;
+  const idx=hitDeco(mx,my);
+  if(idx>=0){
+    maintSelIdx=idx;
+    // Immediately start dragging
+    maintDragging=true;
+    maintDragOff.x=decorations[idx].x-mx;
+    maintDragOff.y=decorations[idx].y-my;
+    canvas.style.cursor="grabbing";
+    updMaintUI();
+    return true;
+  }
+  // Clicked empty space - deselect
+  maintSelIdx=-1;
+  maintDragging=false;
+  canvas.style.cursor="pointer";
+  updMaintUI();
+  return true;
+}
+
+function maintHandleMove(mx,my){
+  if(!maintMode||!maintDragging||maintSelIdx<0)return false;
+  const d=decorations[maintSelIdx];
+  const item=SHOP_ITEMS.find(i=>i.id===d.type);
+  const isInter=item&&item.cat==="interactive";
+  const subY=substrate.baseY||H*0.88;
+  d.x=Math.max(20,Math.min(W-20,mx+maintDragOff.x));
+  if(isInter){
+    d.y=Math.max(30,Math.min(H*0.85,my+maintDragOff.y));
+    if(d.baseY!==undefined)d.baseY=d.y;
+  }else{
+    // Decor slides horizontally along substrate
+    d.y=subY-(d.seed%6);
+  }
+  return true;
+}
+
+function maintHandleUp(mx,my){
+  if(!maintMode)return;
+  if(maintDragging&&maintSelIdx>=0){
+    // Finish drag — keep selected, stop dragging
+    maintDragging=false;
+    canvas.style.cursor="pointer";
+    updMaintUI();
+    return;
+  }
+}
+
+window.maintSell=function(){
+  if(maintSelIdx<0||maintSelIdx>=decorations.length)return;
+  const d=decorations[maintSelIdx];
+  const sellVal=Math.max(1,Math.round((d.cost||5)/2));
+  currency+=sellVal;updCurrency();
+  floatTexts.push({x:d.x,y:d.y-20,text:"+◯"+sellVal,age:0,hue:120});
+  decorations.splice(maintSelIdx,1);
+  maintSelIdx=-1;
+  updMaintUI();
+};
+
+window.maintTransferDeco=function(){
+  if(maintSelIdx<0||tanks.length<2)return;
+  const targets=document.getElementById("deco-xfer-targets");
+  let html="";
+  for(let i=0;i<tanks.length;i++){
+    if(i===currentTank)continue;
+    const tk=tanks[i];
+    html+=`<button class="transfer-tank-btn" onclick="execDecoXfer(${i})">${tk.name||"Tank "+(i+1)}</button>`;
+  }
+  targets.innerHTML=html;
+  document.getElementById("deco-xfer-overlay").classList.add("open");
+};
+window.cancelDecoXfer=function(){
+  document.getElementById("deco-xfer-overlay").classList.remove("open");
+};
+window.execDecoXfer=function(targetIdx){
+  if(maintSelIdx<0)return;
+  const d=decorations[maintSelIdx];
+  const target=tanks[targetIdx];
+  if(!target.decorations)target.decorations=[];
+  // Reposition to center of target tank
+  d.x=W/2+(Math.random()-0.5)*60;
+  const subY=substrate.baseY||H*0.88;
+  const item=SHOP_ITEMS.find(i=>i.id===d.type);
+  d.y=(item&&item.cat==="interactive")?H*0.4:subY;
+  if(d.baseY!==undefined)d.baseY=d.y;
+  target.decorations.push(d);
+  decorations.splice(maintSelIdx,1);
+  maintSelIdx=-1;
+  floatTexts.push({x:W/2,y:H/2,text:"→ "+target.name,age:0,hue:160});
+  document.getElementById("deco-xfer-overlay").classList.remove("open");
+  updMaintUI();
+};
 window.codexSpawn=function(key){
-  if(currency<50)return;
+  if(currency<50||isAtCap())return;
   const entry=codex.get(key);
   if(!entry)return;
   currency-=50;updCurrency();
@@ -3428,11 +3766,11 @@ function renderCodex(){
     renderCodexPreview(cvs,genome);
   });
 }
-window.spawn=function(){if(currency<15)return;currency-=15;updCurrency();const yRange=H*0.75;const c=createCreature(W/2-60+Math.random()*120,H*0.15+Math.random()*yRange*0.6);floatTexts.push({x:c.x,y:c.y-20,text:"-◯15",age:0,hue:0});creatures.push(c);viewId=c.id;updUI()};
+window.spawn=function(){if(currency<15||isAtCap())return;currency-=15;updCurrency();const yRange=H*0.75;const c=createCreature(W/2-60+Math.random()*120,H*0.15+Math.random()*yRange*0.6);floatTexts.push({x:c.x,y:c.y-20,text:"-◯15",age:0,hue:0});creatures.push(c);viewId=c.id;updUI()};
 window.breed=function(){
   const p1=creatures.find(c=>c.id===parent1Id),p2=creatures.find(c=>c.id===parent2Id);
   if(!p1||!p2)return;
-  if(currency<10)return;
+  if(currency<10||isAtCap())return;
   currency-=10;updCurrency();
   generation++;
   const[g1]=crossover(p1.genome,p2.genome);
@@ -3444,7 +3782,125 @@ window.breed=function(){
   child.gen=generation;
   creatures.push(child);parent1Id=null;parent2Id=null;viewId=child.id;updUI();
 };
-window.clearAll=function(){creatures=[];parent1Id=parent2Id=viewId=null;generation=0;bubbles=[];floatTexts=[];hearts=[];growZones=[];placingGrow=false;updUI()};
+// ── Tank Management ──
+function saveTankState(){
+  tanks[currentTank]={name:tanks[currentTank].name,creatures:[...creatures],decorations:[...decorations],
+    bubbles:[...bubbles],growZones:[...growZones],floatTexts:[...floatTexts],hearts:[...hearts]};
+}
+function loadTankState(idx){
+  saveTankState();
+  currentTank=idx;
+  const tk=tanks[idx];
+  creatures=tk.creatures||[];decorations=tk.decorations||[];
+  bubbles=tk.bubbles||[];growZones=tk.growZones||[];
+  floatTexts=tk.floatTexts||[];hearts=tk.hearts||[];
+  parent1Id=parent2Id=viewId=null;placingGrow=false;
+  updUI();renderTankTabs();
+}
+function renderTankTabs(){
+  const div=document.getElementById("tank-tabs");
+  let html="";
+  for(let i=0;i<tanks.length;i++){
+    const n=tanks[i].name||(""+(i+1));
+    const ct=i===currentTank?creatures.length:(tanks[i].creatures||[]).length;
+    html+=`<button class="tank-tab${i===currentTank?" active":""}" onclick="switchTank(${i})">${n} (${ct})</button>`;
+  }
+  const canBuy=currency>=NEW_TANK_COST;
+  html+=`<button class="tank-tab add" onclick="buyTank()" style="${canBuy?"":"opacity:0.4;pointer-events:none"}">+ ◯${NEW_TANK_COST}</button>`;
+  div.innerHTML=html;
+}
+window.switchTank=function(idx){
+  if(idx===currentTank||idx<0||idx>=tanks.length)return;
+  if(maintMode)toggleMaint();
+  loadTankState(idx);
+};
+window.buyTank=function(){
+  if(currency<NEW_TANK_COST)return;
+  currency-=NEW_TANK_COST;updCurrency();
+  const n=tanks.length+1;
+  tanks.push({name:"Tank "+n,creatures:[],decorations:[],bubbles:[],growZones:[],floatTexts:[],hearts:[]});
+  loadTankState(tanks.length-1);
+  floatTexts.push({x:W/2,y:H/2,text:"-◯"+NEW_TANK_COST,age:0,hue:160});
+};
+
+// Confirm clear
+window.confirmClear=function(){
+  const n=creatures.length;
+  const decoN=decorations.length;
+  if(n===0&&decoN===0)return; // nothing to clear
+  let sellVal=0;
+  for(const c of creatures) sellVal+=Math.round(5+((c.maturity||0)*10));
+  for(const d of decorations) sellVal+=Math.round(3*(d.scale||1));
+  document.getElementById("confirm-msg").innerHTML=
+    `Sell <b>${n}</b> LioLume${n!==1?"s":""} and <b>${decoN}</b> decoration${decoN!==1?"s":""}?<br>You'll receive <span style="color:#6be;font-weight:600">◯${sellVal}</span> bubbles.`;
+  document.getElementById("confirm-overlay").classList.add("open");
+};
+window.cancelClear=function(){
+  document.getElementById("confirm-overlay").classList.remove("open");
+};
+window.execClear=function(){
+  let sellVal=0;
+  for(const c of creatures) sellVal+=Math.round(5+((c.maturity||0)*10));
+  for(const d of decorations) sellVal+=Math.round(3*(d.scale||1));
+  currency+=sellVal;updCurrency();
+  creatures=[];decorations=[];parent1Id=parent2Id=viewId=null;generation=0;
+  bubbles=[];hearts=[];growZones=[];placingGrow=false;
+  floatTexts=[];
+  if(sellVal>0)floatTexts.push({x:W/2,y:H/2-20,text:"+◯"+sellVal,age:0,hue:120});
+  document.getElementById("confirm-overlay").classList.remove("open");
+  updUI();
+};
+
+// Transfer
+window.showTransfer=function(){
+  const c=creatures.find(c=>c.id===viewId);
+  if(!c)return;
+  const targets=document.getElementById("transfer-targets");
+  let html="";
+  for(let i=0;i<tanks.length;i++){
+    if(i===currentTank)continue;
+    const tk=tanks[i];
+    const ct=(tk.creatures||[]).length;
+    const full=ct>=TANK_CAP;
+    html+=`<button class="transfer-tank-btn" onclick="execTransfer(${i})" ${full?"disabled":""}>${tk.name||"Tank "+(i+1)} — ${ct}/${TANK_CAP} ${full?"(FULL)":""}</button>`;
+  }
+  if(!html)html=`<p style="color:#5a7a8a;font-size:9px;text-align:center;margin:12px 0">No other tanks. Buy a new one first!</p>`;
+  targets.innerHTML=html;
+  document.getElementById("transfer-overlay").classList.add("open");
+};
+window.cancelTransfer=function(){
+  document.getElementById("transfer-overlay").classList.remove("open");
+};
+window.execTransfer=function(targetIdx){
+  const c=creatures.find(c=>c.id===viewId);
+  if(!c)return;
+  const target=tanks[targetIdx];
+  if(!target.creatures)target.creatures=[];
+  if(target.creatures.length>=TANK_CAP)return;
+  // Remove from current
+  creatures=creatures.filter(cr=>cr.id!==c.id);
+  if(parent1Id===c.id)parent1Id=null;
+  if(parent2Id===c.id)parent2Id=null;
+  viewId=null;
+  // Add to target
+  c.x=W/2+(Math.random()-0.5)*80;c.y=H*0.3+Math.random()*H*0.3;
+  target.creatures.push(c);
+  floatTexts.push({x:W/2,y:H/2,text:"→ "+target.name,age:0,hue:200});
+  document.getElementById("transfer-overlay").classList.remove("open");
+  updUI();renderTankTabs();
+};
+
+// Cap check
+function isAtCap(){return creatures.length>=TANK_CAP}
+function updCapWarn(){
+  const cw=document.getElementById("cap-warn");
+  if(creatures.length>=TANK_CAP){
+    cw.style.display="inline";cw.textContent=`${creatures.length}/${TANK_CAP} FULL`;cw.style.color="#e88";
+  }else if(creatures.length>=TANK_CAP-2){
+    cw.style.display="inline";cw.textContent=`${creatures.length}/${TANK_CAP}`;cw.style.color="#eb6";
+  }else{cw.style.display="none"}
+}
+
 window.sell=function(){
   if(!viewId)return;
   const sel=creatures.find(c=>c.id===viewId);
@@ -3544,13 +4000,13 @@ function rebuildCreature(c){
 
 function cPos(e){const r=canvas.getBoundingClientRect();if(e.touches)return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};return{x:e.clientX-r.left,y:e.clientY-r.top}}
 canvas.addEventListener("mousedown",e=>{startDrag(cPos(e).x,cPos(e).y)});
-canvas.addEventListener("mousemove",e=>{const p=cPos(e);if(dragId)moveDrag(p.x,p.y);if(placingGrow){growPreview={x:p.x,y:p.y}}const bi=hitBubble(p.x,p.y);if(bi>=0)popBubble(bi)});
+canvas.addEventListener("mousemove",e=>{const p=cPos(e);if(dragId||maintDragging)moveDrag(p.x,p.y);if(placingGrow){growPreview={x:p.x,y:p.y}}const bi=hitBubble(p.x,p.y);if(bi>=0)popBubble(bi)});
 canvas.addEventListener("mouseup",e=>{endDrag(cPos(e).x,cPos(e).y)});
 canvas.addEventListener("mouseleave",()=>{if(dragId){canvas.style.cursor="crosshair";dragId=null}growPreview=null});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(shopOpen){shopOpen=false;document.getElementById("shop-overlay").classList.remove("open")}else if(codexOpen){codexOpen=false;document.getElementById("codex-overlay").classList.remove("open")}else if(placingGrow){placingGrow=false;canvas.style.cursor="crosshair";growPreview=null}}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(document.getElementById("deco-xfer-overlay").classList.contains("open")){cancelDecoXfer()}else if(document.getElementById("confirm-overlay").classList.contains("open")){cancelClear()}else if(document.getElementById("transfer-overlay").classList.contains("open")){cancelTransfer()}else if(maintMode){toggleMaint()}else if(shopOpen){shopOpen=false;document.getElementById("shop-overlay").classList.remove("open")}else if(codexOpen){codexOpen=false;document.getElementById("codex-overlay").classList.remove("open")}else if(placingGrow){placingGrow=false;canvas.style.cursor="crosshair";growPreview=null}}});
 let touchPos=null;
 canvas.addEventListener("touchstart",e=>{e.preventDefault();touchPos=cPos(e);if(placingGrow){growPreview={x:touchPos.x,y:touchPos.y}}startDrag(touchPos.x,touchPos.y)},{passive:false});
-canvas.addEventListener("touchmove",e=>{e.preventDefault();touchPos=cPos(e);if(dragId){moveDrag(touchPos.x,touchPos.y)}if(placingGrow){growPreview={x:touchPos.x,y:touchPos.y}}const bi=hitBubble(touchPos.x,touchPos.y);if(bi>=0)popBubble(bi)},{passive:false});
+canvas.addEventListener("touchmove",e=>{e.preventDefault();touchPos=cPos(e);if(dragId||maintDragging){moveDrag(touchPos.x,touchPos.y)}if(placingGrow){growPreview={x:touchPos.x,y:touchPos.y}}const bi=hitBubble(touchPos.x,touchPos.y);if(bi>=0)popBubble(bi)},{passive:false});
 canvas.addEventListener("touchend",e=>{e.preventDefault();if(touchPos)endDrag(touchPos.x,touchPos.y);touchPos=null},{passive:false});
 
 function drawTitle(now){
@@ -3605,7 +4061,9 @@ function frame(now){
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
   const tm=Date.now()*.0003;ctx.globalAlpha=.018;
   for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(W*.3+Math.sin(tm+i*1.3)*W*.3,H*.3+Math.cos(tm*.7+i*.9)*H*.3,60+Math.sin(tm+i)*30,0,Math.PI*2);ctx.fillStyle=`hsla(${190+i*15},50%,70%,1)`;ctx.fill()}
-  ctx.globalAlpha=1;drawSubstrate(now);drawDecorations(now);drawP();
+  ctx.globalAlpha=1;drawSubstrate(now);drawDecorations(now);
+  if(maintMode)drawMaintOverlay();
+  drawP();
   // Jelly title behind creatures
   drawTitle(now);
   // Grow zones (update only, draw later on top)
@@ -3683,7 +4141,7 @@ window.addEventListener("resize",()=>{resize();initP();initSubstrate();if(helixG
 resize();initP();initSubstrate();
 const first=createCreature(W/2-40,H*0.4);first.isFirst=true;creatures.push(first);
 const second=createCreature(W/2+40,H*0.35);second.isFirst=true;creatures.push(second);
-viewId=first.id;updUI();
+viewId=first.id;updUI();renderTankTabs();
 requestAnimationFrame(frame);
 </script>
 </body>
